@@ -1,24 +1,15 @@
 import 'package:flutter/material.dart';
-import 'package:woodyz/features/auth/view/explore.dart';
-import 'package:woodyz/features/auth/view/login.dart';
-import 'package:woodyz/features/auth/view/signup.dart';
-import 'test1.dart';
-import 'package:provider/provider.dart';
+import 'package:woodyz/config/env.dart';
+import 'package:supabase_flutter/supabase_flutter.dart';
+import 'package:woodyz/app.dart';
 
-void main() {
-  // ChangeNotifierProvider(create: (b) => ConfirmProvider(),
-  runApp(MyApp());
-}
+void main() async {
+  WidgetsFlutterBinding.ensureInitialized();
 
-class MyApp extends StatelessWidget {
-  const MyApp({super.key});
+  await Supabase.initialize(
+    url: Secrets.supabase_url,
+    publishableKey: Secrets.supabase_anon_key,
+  );
 
-  @override
-  Widget build(BuildContext context) {
-    return MaterialApp(
-      debugShowCheckedModeBanner: false,
-      title: "woodyz",
-      home: Login(),
-    );
-  }
+  runApp(const MyApp());
 }
