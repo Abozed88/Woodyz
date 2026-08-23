@@ -9,43 +9,60 @@ class Widget1 extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    double width = MediaQuery.of(context).size.width;
     return Row(
       mainAxisAlignment: MainAxisAlignment.spaceBetween,
       children: [
-        Container(
-          width: width*0.4,
-          height: 200,
-          decoration: BoxDecoration(
-           color: const Color.fromRGBO(46, 46, 45, 1),
-            borderRadius: BorderRadius.circular(12),
-          ),
-          child: Column(
-            children: [
-              const SizedBox(height: 30),
-              const Icon(Icons.production_quantity_limits, color: Color.fromRGBO(252, 184, 25, 1), size: 50,),
-              Text("Stock Quantity", style: TextStyle(color: Colors.grey[350], fontSize: 14, fontFamily: "Saira"),),
-              Text(p.stock.toString(), style: const TextStyle(color: Colors.white, fontSize: 14, fontFamily: "Saira"),),
-            ],
-          ),
+        _buildInfoBox(
+          context,
+          label: "Stock Quantity",
+          value: p.stock.toString(),
+          icon: Icons.inventory_2_outlined,
         ),
-        Container(
-          width: width*0.4,
-          height: 200,
-          decoration: BoxDecoration(
-            color: const Color.fromRGBO(46, 46, 45, 1),
-            borderRadius: BorderRadius.circular(12),
-          ),
-          child: Column(
-            children: [
-              const SizedBox(height: 30),
-              const Icon(Icons.access_time_filled_sharp, color: Color.fromRGBO(252, 184, 25, 1), size: 50,),
-              Text("Uploaded At", style: TextStyle(color: Colors.grey[350], fontSize: 14, fontFamily: "Saira"),),
-              Text(p.createdAt?.substring(0, 10) ?? "N/A", style: const TextStyle(color: Colors.white, fontSize: 14, fontFamily: "Saira"),),
-            ],
-          ),
+        _buildInfoBox(
+          context,
+          label: "Uploaded At",
+          value: p.createdAt?.substring(0, 10) ?? "N/A",
+          icon: Icons.calendar_today_outlined,
         ),
       ],
+    );
+  }
+
+  Widget _buildInfoBox(BuildContext context, {required String label, required String value, required IconData icon}) {
+    final theme = Theme.of(context);
+    final primaryColor = theme.colorScheme.primary;
+
+    return Container(
+      width: MediaQuery.of(context).size.width * 0.42,
+      padding: const EdgeInsets.all(20),
+      decoration: BoxDecoration(
+        color: theme.colorScheme.surface,
+        borderRadius: BorderRadius.circular(16),
+        border: Border.all(color: theme.colorScheme.onSurface.withOpacity(0.05)),
+      ),
+      child: Column(
+        children: [
+          Icon(icon, color: primaryColor, size: 32),
+          const SizedBox(height: 12),
+          Text(
+            label,
+            style: TextStyle(
+              color: theme.colorScheme.onSurface.withOpacity(0.5),
+              fontSize: 12,
+              fontFamily: "Saira",
+            ),
+          ),
+          const SizedBox(height: 4),
+          Text(
+            value,
+            style: const TextStyle(
+              fontSize: 16,
+              fontWeight: FontWeight.bold,
+              fontFamily: "Saira",
+            ),
+          ),
+        ],
+      ),
     );
   }
 }
@@ -57,15 +74,20 @@ class Widget2 extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    final theme = Theme.of(context);
+    final primaryColor = theme.colorScheme.primary;
+
     return Card(
-      color: const Color.fromRGBO(82, 55, 10, 1),
-      elevation: 4,
+      elevation: 0,
+      color: theme.brightness == Brightness.dark 
+          ? const Color(0xFF2C2C2B) 
+          : const Color(0xFFFBFBFB),
       shape: RoundedRectangleBorder(
-          borderRadius: BorderRadius.circular(10),
-          side: const BorderSide(width: 1, color: Color.fromRGBO(112, 75, 13, 1))
+        borderRadius: BorderRadius.circular(16),
+        side: BorderSide(color: theme.colorScheme.onSurface.withOpacity(0.1)),
       ),
       child: InkWell(
-        onTap: () async{
+        onTap: () async {
           List<Product> newItems = await ProductsProvider().fetchData(0, 100, "all", null, artisan.id);
           if (context.mounted) {
             Navigator.push(
@@ -76,46 +98,65 @@ class Widget2 extends StatelessWidget {
             );
           }
         },
-        borderRadius: BorderRadius.circular(10),
-        splashColor: Colors.white10,
+        borderRadius: BorderRadius.circular(16),
         child: Padding(
-          padding: const EdgeInsets.all(10),
+          padding: const EdgeInsets.all(16),
           child: Row(
             children: [
               Container(
-                  width: 100,
-                  height: 100,
-                  decoration: BoxDecoration(
-                    shape: BoxShape.circle,
-                    border: Border.all(color: const Color.fromRGBO(252, 184, 25, 1),),
-                  ),
-                  padding: const EdgeInsets.all(5),
-                  child: ClipOval(
-                    child: artisan.avatarUrl == "" || artisan.avatarUrl == null
-                        ? Image.asset("assets/images/profile.webp", fit: BoxFit.cover)
-                        : Image.network(artisan.avatarUrl!, fit: BoxFit.cover),
-                  )
+                width: 70,
+                height: 70,
+                decoration: BoxDecoration(
+                  shape: BoxShape.circle,
+                  border: Border.all(color: primaryColor, width: 2),
+                ),
+                padding: const EdgeInsets.all(3),
+                child: ClipOval(
+                  child: artisan.avatarUrl != null && artisan.avatarUrl!.isNotEmpty
+                      ? Image.network(artisan.avatarUrl!, fit: BoxFit.cover)
+                      : Image.asset("assets/images/profile.webp", fit: BoxFit.cover),
+                ),
               ),
-              const SizedBox(width: 15,),
+              const SizedBox(width: 16),
               Expanded(
                 child: Column(
                   crossAxisAlignment: CrossAxisAlignment.start,
                   children: [
                     Text(
-                      artisan.username,
-                      style: const TextStyle(color: Color.fromRGBO(252, 184, 25, 1), fontSize: 14, fontWeight: FontWeight.bold, fontFamily: "Saira"),
+                      "@${artisan.username}",
+                      style: TextStyle(
+                        color: primaryColor,
+                        fontSize: 14,
+                        fontWeight: FontWeight.bold,
+                        fontFamily: "Saira",
+                      ),
                     ),
                     Text(
                       artisan.fullName,
-                      style: const TextStyle(color: Colors.white, fontSize: 18, fontWeight: FontWeight.bold, fontFamily: "Saira"),
+                      style: const TextStyle(
+                        fontSize: 18,
+                        fontWeight: FontWeight.bold,
+                        fontFamily: "Saira",
+                      ),
                     ),
-                    Text(
-                      artisan.location,
-                      style: TextStyle(color: Colors.grey[350], fontSize: 14, fontFamily: "Saira"),
+                    Row(
+                      children: [
+                        Icon(Icons.location_on_outlined, size: 14, color: theme.colorScheme.onSurface.withOpacity(0.5)),
+                        const SizedBox(width: 4),
+                        Text(
+                          artisan.location,
+                          style: TextStyle(
+                            color: theme.colorScheme.onSurface.withOpacity(0.5),
+                            fontSize: 13,
+                            fontFamily: "Saira",
+                          ),
+                        ),
+                      ],
                     ),
                   ],
                 ),
-              )
+              ),
+              Icon(Icons.arrow_forward_ios, size: 16, color: theme.colorScheme.onSurface.withOpacity(0.3)),
             ],
           ),
         ),

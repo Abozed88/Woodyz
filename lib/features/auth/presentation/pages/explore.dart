@@ -17,7 +17,15 @@ class Explore extends StatelessWidget {
             const SizedBox(height: 20,),
             SearchCont(searchcontroller: _searchcontroller, u: u,),
             const SizedBox(height: 10,),
-            const Text("Categories", style: TextStyle(color: Colors.white, fontFamily: "Saira", fontWeight: FontWeight.bold,fontSize: 20),),
+            Text(
+              "Categories",
+              style: TextStyle(
+                color: Theme.of(context).colorScheme.onSurface,
+                fontFamily: "Saira",
+                fontWeight: FontWeight.bold,
+                fontSize: 20,
+              ),
+            ),
             Categories(u: u,),
           ],
         ),

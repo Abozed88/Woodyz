@@ -2,94 +2,127 @@ import 'package:flutter/material.dart';
 
 class CustomTextField extends StatefulWidget {
   final String hint;
+  final String? label;
   final TextEditingController controller;
-  bool obscure;
-  CustomTextField({super.key, required this.hint, required this.controller, this.obscure=false});
+  final bool obscure;
+  final TextInputType keyboardType;
+  final int? maxLines;
+
+  const CustomTextField({
+    super.key,
+    required this.hint,
+    this.label,
+    required this.controller,
+    this.obscure = false,
+    this.keyboardType = TextInputType.text,
+    this.maxLines = 1,
+  });
 
   @override
   State<CustomTextField> createState() => _CustomTextFieldState();
 }
 
 class _CustomTextFieldState extends State<CustomTextField> {
+  late bool _obscureText;
+
+  @override
+  void initState() {
+    super.initState();
+    _obscureText = widget.obscure;
+  }
+
   @override
   Widget build(BuildContext context) {
-    return TextFormField(
-      controller: widget.controller,
-      style: const TextStyle(
-          color: Colors.white,
-          fontSize: 16
-      ),
-      obscureText: widget.obscure,
-      cursorColor: const Color.fromRGBO(252, 184, 25, 1),
-      decoration: InputDecoration(
-          focusedBorder: OutlineInputBorder(
-              borderRadius: BorderRadius.circular(12),
-              borderSide: const BorderSide(
-                color: Color.fromRGBO(252, 184, 25, 1),
-                width: 1.4,
-              )
-          ),
-          prefixIcon: widget.hint == "name" ? const Icon(Icons.person, color: Color.fromRGBO(252, 184, 25, 1),)
-          : widget.hint == "you@gmail.com" ? const Icon(Icons.email, color: Color.fromRGBO(252, 184, 25, 1),)
-          : widget.hint=="password" ? const Icon(Icons.lock, color: Color.fromRGBO(252, 184, 25, 1),)
-          : widget.hint=="phone" ? const Icon(Icons.phone_android, color: Color.fromRGBO(252, 184, 25, 1),)
-          : widget.hint=="address" ? const Icon(Icons.location_on, color: Color.fromRGBO(252, 184, 25, 1),)
-          : widget.hint=="shop" ? const Icon(Icons.store, color: Color.fromRGBO(252, 184, 25, 1),)
-          : widget.hint=="link" ? const Icon(Icons.link, color: Color.fromRGBO(252, 184, 25, 1),): null,
-
-          suffixIcon: widget.hint != "password" ? null : IconButton(
-            icon: Icon(
-              widget.obscure ? Icons.visibility_off : Icons
-                  .visibility,
-              color: const Color.fromRGBO(252, 184, 25, 1),
+    final theme = Theme.of(context);
+    
+    return Column(
+      crossAxisAlignment: CrossAxisAlignment.start,
+      children: [
+        if (widget.label != null) ...[
+          Text(
+            widget.label!,
+            style: TextStyle(
+              color: theme.colorScheme.onSurface.withOpacity(0.7),
+              fontSize: 14,
+              fontFamily: "Saira",
+              fontWeight: FontWeight.w500,
             ),
-            onPressed: () {
-              setState(() {
-                widget.obscure = !widget.obscure; // toggle state
-              });
-            },
           ),
-          filled: true,
-          fillColor: const Color.fromRGBO(33, 33, 32, 1),
-          hintText: widget.hint,
-          border: OutlineInputBorder(
-              borderRadius: BorderRadius.circular(12),
-              borderSide: const BorderSide(
-                color: Color.fromRGBO(56, 56, 52, 1),
-                width: 1.4,
-              )
-          )
-      ),
-      validator: (value) {
-        if (value == null || value.isEmpty) {
-          return "This field is required";
-        }
-
-        // Password length check
-        if (widget.hint == "password") {
-          if (value.length < 6) return "Password too short (min 6)";
-          if (value.length > 32) return "Password too long (max 32)";
-        }
-
-        // Email format check
-        if (widget.hint == "you@gmail.com") {
-          if (!value.contains("@") || !value.contains(".")) {
-            return "Enter a valid email (name@domain.com)";
-          }
-        }
-
-        if(widget.hint == "phone"){
-          for (int i = 0; i < value.length; i++) {
-            String ch = value[i];
-            if (RegExp(r'\d').hasMatch(ch)) {
-              return null;
-            } else {
-              return "Enter a valid phone number";
+          const SizedBox(height: 8),
+        ],
+        TextFormField(
+          controller: widget.controller,
+          obscureText: _obscureText,
+          keyboardType: widget.keyboardType,
+          maxLines: widget.maxLines,
+          style: TextStyle(
+            color: theme.colorScheme.onSurface,
+            fontSize: 16,
+            fontFamily: "Saira",
+          ),
+          cursorColor: theme.colorScheme.primary,
+          decoration: InputDecoration(
+            isDense: true,
+            hintText: widget.hint,
+            prefixIcon: _getPrefixIcon(context),
+            suffixIcon: widget.obscure
+                ? IconButton(
+                    icon: Icon(
+                      _obscureText ? Icons.visibility_off : Icons.visibility,
+                      color: theme.colorScheme.primary.withOpacity(0.7),
+                      size: 20,
+                    ),
+                    onPressed: () {
+                      setState(() {
+                        _obscureText = !_obscureText;
+                      });
+                    },
+                  )
+                : null,
+          ),
+          validator: (value) {
+            if (value == null || value.trim().isEmpty) {
+              return "This field is required";
             }
-          }
-        }
-        return null;
-      },
+
+            if (widget.hint == "password") {
+              if (value.length < 6) return "Password too short (min 6)";
+              if (value.length > 32) return "Password too long (max 32)";
+            }
+
+            if (widget.hint == "you@gmail.com") {
+              final emailRegex = RegExp(r'^[\w-.]+@([\w-]+\.)+[\w-]{2,4}$');
+              if (!emailRegex.hasMatch(value.trim())) {
+                return "Enter a valid email address";
+              }
+            }
+
+            if (widget.hint == "phone") {
+              if (!RegExp(r'^\+?[0-9]{8,15}$').hasMatch(value.trim())) {
+                return "Enter a valid phone number";
+              }
+            }
+            return null;
+          },
+        ),
+      ],
     );
+  }
+
+  Widget? _getPrefixIcon(BuildContext context) {
+    final theme = Theme.of(context);
+    final iconColor = theme.colorScheme.primary;
+    const iconSize = 20.0;
+
+    if (widget.hint == "name") return Icon(Icons.person_outline, color: iconColor, size: iconSize);
+    if (widget.hint == "you@gmail.com") return Icon(Icons.email_outlined, color: iconColor, size: iconSize);
+    if (widget.hint == "password") return Icon(Icons.lock_outline, color: iconColor, size: iconSize);
+    if (widget.hint == "phone") return Icon(Icons.phone_android_outlined, color: iconColor, size: iconSize);
+    if (widget.hint == "address") return Icon(Icons.location_on_outlined, color: iconColor, size: iconSize);
+    if (widget.hint == "shop") return Icon(Icons.store_outlined, color: iconColor, size: iconSize);
+    if (widget.hint == "link") return Icon(Icons.link_outlined, color: iconColor, size: iconSize);
+    if (widget.hint.contains("describe")) return Icon(Icons.description_outlined, color: iconColor, size: iconSize);
+    
+    return null;
   }
 }

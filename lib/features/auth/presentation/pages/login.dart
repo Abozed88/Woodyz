@@ -1,5 +1,6 @@
+import 'dart:ui';
 import 'package:flutter/material.dart';
-import 'package:flutter_secure_storage/flutter_secure_storage.dart';
+import 'package:woodyz/core/theme/app_theme.dart';
 import 'package:woodyz/core/widgets/custom_text_field.dart';
 import 'package:woodyz/features/auth/presentation/providers/auth_provider.dart';
 import 'package:woodyz/features/auth/presentation/pages/signup.dart';
@@ -15,8 +16,8 @@ class _LoginState extends State<Login> {
   final GlobalKey<FormState> _key = GlobalKey();
   final TextEditingController _emailcontroller = TextEditingController();
   final TextEditingController _passcontroller = TextEditingController();
-  final storage = const FlutterSecureStorage();
   bool _isLoading = true;
+  bool _isLoggingIn = false;
 
   @override
   void initState() {
@@ -27,15 +28,19 @@ class _LoginState extends State<Login> {
   Future<void> _checkLoginStatus() async {
     final session = supabase.auth.currentSession;
     if (session != null) {
-      final profileData = await supabase
-          .from('profiles')
-          .select()
-          .eq('id', session.user.id)
-          .single();
-      
-      if (mounted) {
-        final profile = User.fromJson(profileData);
-        AuthProvider(context: context).navigateBasedOnRole(profile);
+      try {
+        final profileData = await supabase
+            .from('profiles')
+            .select()
+            .eq('id', session.user.id)
+            .single();
+        
+        if (mounted) {
+          final profile = User.fromJson(profileData);
+          AuthProvider(context: context).navigateBasedOnRole(profile);
+        }
+      } catch (e) {
+        if (mounted) setState(() => _isLoading = false);
       }
     } else {
       if (mounted) {
@@ -48,99 +53,226 @@ class _LoginState extends State<Login> {
 
   @override
   Widget build(BuildContext context) {
-    double width = MediaQuery.of(context).size.width;
+    return Theme(
+      data: AppTheme.darkTheme,
+      child: Builder(
+        builder: (context) {
+          final theme = Theme.of(context);
+          
+          if (_isLoading) {
+            return Scaffold(
+              backgroundColor: theme.scaffoldBackgroundColor,
+              body: Center(child: CircularProgressIndicator(color: theme.colorScheme.primary)),
+            );
+          }
 
-    if (_isLoading) {
-      return const Scaffold(
-        backgroundColor: Color.fromRGBO(46, 46, 45, 1),
-        body: Center(child: CircularProgressIndicator(color: Colors.orange)),
-      );
-    }
-
-    return Scaffold(
-        body: SingleChildScrollView(
-          child: Stack(
-            children: [
-              Positioned.fill(child: Image.asset(
-                'assets/images/log-sign-bckg.jpeg',
-                fit: BoxFit.cover,)
-              ),
-              Center(
-                child: Column(
-                  children: [
-                    const SizedBox(height: 25,),
-                    const Text("WOODYZ", style: TextStyle(fontSize: 25, color: Colors.white, fontFamily: "Western"),),
-                    Text("Welcome to the store", style: TextStyle(fontSize: 14, color: Colors.grey[350], fontFamily: "Saira"),),
-                    const SizedBox(height: 25,),
-                    Container(
-                      width: width * 0.9,
-                      height: 350,
-                      decoration: BoxDecoration(
-                          color: const Color.fromRGBO(46, 46, 45, 1),
-                          borderRadius: BorderRadius.circular(12),
-                          border: Border.all(color: const Color.fromRGBO(56, 56, 52, 1), width: 1.4)
-                      ),
-                      child: SingleChildScrollView(
-                        child: Center(
-                          child: Form(
-                              key: _key,
-                              child: Column(
-                                children: [
-                                  const SizedBox(height: 20,),
-                                  const Text("Email Address", style: TextStyle(color: Colors.white, fontSize: 14, fontFamily: "Saira"),),
-                                  SizedBox(
-                                    width: width * 0.7,
-                                    child: CustomTextField(hint: "you@gmail.com", controller: _emailcontroller,),
-                                  ),
-                                  const SizedBox(height: 20,),
-                                  const Text("Password", style: TextStyle(color: Colors.white, fontSize: 14, fontFamily: "Saira"),),
-                                  SizedBox(
-                                    width: width * 0.7,
-                                    child: CustomTextField(hint: "password", controller: _passcontroller, obscure: true,),
-                                  ),
-                                  const SizedBox(height: 20,),
-                                  ElevatedButton(
-                                    onPressed: () async {
-                                      if (_key.currentState!.validate()){
-                                        await AuthProvider(context: context).login(
-                                          email: _emailcontroller.text,
-                                          password: _passcontroller.text,
-                                        );
-                                      }
-                                    },
-                                    style: ButtonStyle(
-                                        backgroundColor: WidgetStateProperty.all(const Color.fromRGBO(252, 184, 25, 1))
-                                    ),
-                                    child: const Text("LOG IN", style: TextStyle(color: Colors.white, fontFamily: "Saira"),),
-                                  ),
-                                  Padding(
-                                    padding: const EdgeInsets.symmetric(vertical: 35),
-                                    child: Row(
-                                      mainAxisAlignment: MainAxisAlignment.center,
-                                      children: [
-                                        Text("Don't have an account?", style: TextStyle(fontSize: 14, color: Colors.grey[350], fontFamily: "Saira")),
-                                        TextButton(
-                                            onPressed: (){
-                                              Navigator.push(context, MaterialPageRoute(builder: (context) => const Signup()));
-                                            },
-                                            child: const Text("Sign Up", style: TextStyle(color: Color.fromRGBO(252, 184, 25, 1), fontStyle: FontStyle.italic, fontSize: 14, fontFamily: "Saira"))
-                                        )
-                                      ],
-                                    ),
-                                  )
-                                ],
-                              )
-                          ),
-                        ),
+          return Scaffold(
+            body: Stack(
+              children: [
+                // Background Image with Overlay
+                Positioned.fill(
+                  child: Image.asset(
+                    'assets/images/log-sign-bckg.jpeg',
+                    fit: BoxFit.cover,
+                  ),
+                ),
+                Positioned.fill(
+                  child: Container(
+                    decoration: BoxDecoration(
+                      gradient: LinearGradient(
+                        begin: Alignment.topCenter,
+                        end: Alignment.bottomCenter,
+                        colors: [
+                          Colors.black.withValues(alpha: 0.4),
+                          Colors.black.withValues(alpha: 0.8),
+                        ],
                       ),
                     ),
-                    const SizedBox(height: 200),
-                  ],
+                  ),
                 ),
-              )
-            ],
-          ),
-        )
+                
+                SafeArea(
+                  child: Center(
+                    child: SingleChildScrollView(
+                      padding: const EdgeInsets.symmetric(horizontal: 24),
+                      child: Column(
+                        mainAxisAlignment: MainAxisAlignment.center,
+                        children: [
+                          // Header Logo
+                          const Text(
+                            "WOODYZ",
+                            style: TextStyle(
+                              fontSize: 48,
+                              color: Colors.white,
+                              fontFamily: "Western",
+                              letterSpacing: 4,
+                            ),
+                          ),
+                          const SizedBox(height: 8),
+                          Text(
+                            "CRAFTED WITH PASSION",
+                            style: TextStyle(
+                              fontSize: 12,
+                              color: theme.colorScheme.primary,
+                              fontFamily: "Saira",
+                              fontWeight: FontWeight.bold,
+                              letterSpacing: 2,
+                            ),
+                          ),
+                          const SizedBox(height: 48),
+
+                          // Login Container with Glassmorphism
+                          ClipRRect(
+                            borderRadius: BorderRadius.circular(24),
+                            child: BackdropFilter(
+                              filter: ImageFilter.blur(sigmaX: 10, sigmaY: 10),
+                              child: Container(
+                                padding: const EdgeInsets.all(32),
+                                decoration: BoxDecoration(
+                                  color: Colors.white.withOpacity(0.08),
+                                  borderRadius: BorderRadius.circular(24),
+                                  border: Border.all(
+                                    color: Colors.white.withOpacity(0.2),
+                                    width: 1.5,
+                                  ),
+                                ),
+                                child: Form(
+                                  key: _key,
+                                  child: Column(
+                                    crossAxisAlignment: CrossAxisAlignment.stretch,
+                                    children: [
+                                      Text(
+                                        "Login to your account",
+                                        textAlign: TextAlign.center,
+                                        style: TextStyle(
+                                          color: theme.colorScheme.onSurface,
+                                          fontSize: 18,
+                                          fontFamily: "Saira",
+                                          fontWeight: FontWeight.w600,
+                                        ),
+                                      ),
+                                      const SizedBox(height: 32),
+                                      
+                                      CustomTextField(
+                                        label: "Email Address",
+                                        hint: "you@gmail.com",
+                                        controller: _emailcontroller,
+                                        keyboardType: TextInputType.emailAddress,
+                                      ),
+                                      const SizedBox(height: 24),
+                                      
+                                      CustomTextField(
+                                        label: "Password",
+                                        hint: "password",
+                                        controller: _passcontroller,
+                                        obscure: true,
+                                      ),
+                                      
+                                      Align(
+                                        alignment: Alignment.centerRight,
+                                        child: TextButton(
+                                          onPressed: () {
+                                            // TODO: Forgot Password
+                                          },
+                                          child: Text(
+                                            "Forgot Password?",
+                                            style: TextStyle(
+                                              color: theme.colorScheme.primary.withValues(alpha: 0.8),
+                                              fontSize: 12,
+                                              fontFamily: "Saira",
+                                            ),
+                                          ),
+                                        ),
+                                      ),
+                                      const SizedBox(height: 16),
+
+                                      ElevatedButton(
+                                        onPressed: _isLoggingIn ? null : _handleLogin,
+                                        style: ElevatedButton.styleFrom(
+                                          backgroundColor: theme.colorScheme.primary,
+                                          foregroundColor: theme.colorScheme.onPrimary,
+                                        ),
+                                        child: _isLoggingIn
+                                            ? SizedBox(
+                                                height: 20,
+                                                width: 20,
+                                                child: CircularProgressIndicator(
+                                                  strokeWidth: 2,
+                                                  valueColor: AlwaysStoppedAnimation<Color>(theme.colorScheme.onPrimary),
+                                                ),
+                                              )
+                                            : const Text(
+                                                "LOG IN",
+                                                style: TextStyle(
+                                                  fontSize: 16,
+                                                  fontWeight: FontWeight.bold,
+                                                  fontFamily: "Saira",
+                                                  letterSpacing: 1.2,
+                                                ),
+                                              ),
+                                      ),
+                                    ],
+                                  ),
+                                ),
+                              ),
+                            ),
+                          ),
+                          const SizedBox(height: 32),
+
+                          // Footer
+                          Row(
+                            mainAxisAlignment: MainAxisAlignment.center,
+                            children: [
+                              Text(
+                                "Don't have an account?",
+                                style: TextStyle(
+                                  color: theme.colorScheme.onSurface.withOpacity(0.7),
+                                  fontFamily: "Saira",
+                                ),
+                              ),
+                              TextButton(
+                                onPressed: () {
+                                  Navigator.push(
+                                    context,
+                                    MaterialPageRoute(builder: (context) => const Signup()),
+                                  );
+                                },
+                                child: Text(
+                                  "Sign Up",
+                                  style: TextStyle(
+                                    color: theme.colorScheme.primary,
+                                    fontWeight: FontWeight.bold,
+                                    fontFamily: "Saira",
+                                  ),
+                                ),
+                              ),
+                            ],
+                          ),
+                          const SizedBox(height: 24),
+                        ],
+                      ),
+                    ),
+                  ),
+                ),
+              ],
+            ),
+          );
+        }
+      ),
     );
+  }
+
+  Future<void> _handleLogin() async {
+    if (_key.currentState!.validate()) {
+      setState(() => _isLoggingIn = true);
+      try {
+        await AuthProvider(context: context).login(
+          email: _emailcontroller.text.trim(),
+          password: _passcontroller.text.trim(),
+        );
+      } finally {
+        if (mounted) setState(() => _isLoggingIn = false);
+      }
+    }
   }
 }

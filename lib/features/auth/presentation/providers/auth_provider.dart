@@ -14,13 +14,18 @@ class AuthProvider {
 
   AuthProvider({required this.context});
 
-  void navigateBasedOnRole(User profile) {
+  void navigateBasedOnRole(User profile, {Map<String, dynamic>? extraData}) {
     if (profile.role == 'customer') {
       Customer c = Customer.fromProfile(profile);
       Navigator.pushReplacement(
           context, MaterialPageRoute(builder: (context) => Home(customer: c)));
     } else if (profile.role == 'artisan') {
-      Artisan a = Artisan.fromProfile(profile);
+      Artisan a;
+      if (extraData != null) {
+        a = Artisan.fromJson({...profile.toJson(), 'artisans': extraData});
+      } else {
+        a = Artisan.fromProfile(profile);
+      }
       Navigator.pushReplacement(
           context, MaterialPageRoute(builder: (context) => Arthome(artisan: a)));
     }
@@ -39,13 +44,20 @@ class AuthProvider {
       if (response.user != null) {
         final profileData = await supabase
             .from('profiles')
-            .select()
+            .select('*, artisans(*)')
             .eq('id', response.user!.id)
             .single();
         
-        final profile = User.fromJson(profileData);
-        if (context.mounted) {
-          navigateBasedOnRole(profile);
+        if (profileData['role'] == 'artisan') {
+          final artisan = Artisan.fromJson(profileData);
+          if (context.mounted) {
+            navigateBasedOnRole(artisan);
+          }
+        } else {
+          final profile = User.fromJson(profileData);
+          if (context.mounted) {
+            navigateBasedOnRole(profile);
+          }
         }
       }
     } catch (e) {
@@ -84,6 +96,7 @@ class AuthProvider {
     required String password,
     required User profileData,
     File? avatarFile,
+    Map<String, dynamic>? artisanData,
   }) async {
     try {
       final authResponse = await supabase.auth.signUp(
@@ -101,11 +114,26 @@ class AuthProvider {
         newUser.id = authResponse.user!.id;
         newUser.avatarUrl = avatarUrl;
 
+        // Insert into profiles
         await supabase.from('profiles').insert(newUser.toJson());
 
-        if (context.mounted) {
-          navigateBasedOnRole(newUser);
+        // If artisan, insert into artisans table
+        if (newUser.role == 'artisan' && artisanData != null) {
+          final fullArtisanData = {
+            ...artisanData,
+            'id': newUser.id,
+          };
+          await supabase.from('artisans').insert(fullArtisanData);
+          
+          if (context.mounted) {
+            navigateBasedOnRole(newUser, extraData: fullArtisanData);
+          }
+        } else {
+          if (context.mounted) {
+            navigateBasedOnRole(newUser);
+          }
         }
+        
         return newUser;
       }
       return null;

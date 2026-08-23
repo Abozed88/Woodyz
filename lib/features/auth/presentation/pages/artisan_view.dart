@@ -21,10 +21,11 @@ class ArtisanView extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    final theme = Theme.of(context);
     final scrollController = ScrollController();
     double width = MediaQuery.of(context).size.width;
+
     return Scaffold(
-      backgroundColor: Colors.black,
       body: SafeArea(
         child: SingleChildScrollView(
           child: Column(
@@ -33,7 +34,7 @@ class ArtisanView extends StatelessWidget {
               Padding(
                 padding: const EdgeInsets.all(10.0),
                 child: IconButton(
-                  icon: const Icon(Icons.arrow_back_rounded, color: Color.fromRGBO(252, 184, 25, 1)),
+                  icon: Icon(Icons.arrow_back_ios_new, color: theme.colorScheme.primary, size: 20),
                   onPressed: () => Navigator.pop(context),
                 ),
               ),
@@ -42,8 +43,8 @@ class ArtisanView extends StatelessWidget {
                   children: [
                     PImage(image_url: artisan.avatarUrl),
                     const SizedBox(height: 10),
-                    Text(artisan.fullName, style: const TextStyle(fontWeight: FontWeight.bold, fontSize: 25, color: Colors.white)),
-                    const Text("Artisan", style: TextStyle(color: Color.fromRGBO(252, 184, 25, 1), fontFamily: "Saira")),
+                    Text(artisan.fullName, style: const TextStyle(fontWeight: FontWeight.bold, fontSize: 25)),
+                    Text("Artisan", style: TextStyle(color: theme.colorScheme.primary, fontFamily: "Saira")),
                     const SizedBox(height: 30), 
                   ],
                 ),
@@ -51,59 +52,55 @@ class ArtisanView extends StatelessWidget {
               Padding(
                 padding: const EdgeInsets.symmetric(horizontal: 40),
                 child: Column(
+                  crossAxisAlignment: CrossAxisAlignment.start,
                   children: [
-                    Row(
-                        crossAxisAlignment: CrossAxisAlignment.start,
-                        children: [
-                          const SizedBox(
-                            width: 80,
-                            child: Text("Bio", style: TextStyle(fontWeight: FontWeight.bold, fontSize: 15, color: Color.fromRGBO(252, 184, 25, 1), fontFamily: "Saira")),
-                          ),
-                          Expanded(
-                            child: Text(artisan.bio ?? "N/A", style: const TextStyle(fontWeight: FontWeight.bold, fontSize: 15, color: Colors.white, fontFamily: "Saira")),
-                          ),
-                        ]
-                    ),
+                    Text("Bio", style: TextStyle(fontWeight: FontWeight.bold, fontSize: 18, color: theme.colorScheme.primary, fontFamily: "Saira")),
+                    Text(artisan.bio ?? "No bio provided.", style: TextStyle(fontSize: 15, color: theme.colorScheme.onSurface.withOpacity(0.7), fontFamily: "Saira")),
                     const SizedBox(height: 15),
-                    Row(
-                        crossAxisAlignment: CrossAxisAlignment.start,
-                        children: [
-                          const SizedBox(
-                            width: 80,
-                            child: Text("Location", style: TextStyle(fontWeight: FontWeight.bold, fontSize: 15, color: Color.fromRGBO(252, 184, 25, 1), fontFamily: "Saira")),
-                          ),
-                          Expanded(
-                            child: Text(artisan.location, style: const TextStyle(fontWeight: FontWeight.bold, fontSize: 15, color: Colors.white, fontFamily: "Saira")),
-                          ),
-                        ]
+                    Text("Address", style: TextStyle(fontWeight: FontWeight.bold, fontSize: 18, color: theme.colorScheme.primary, fontFamily: "Saira")),
+                    Text(artisan.address ?? artisan.location, style: TextStyle(fontSize: 15, color: theme.colorScheme.onSurface.withOpacity(0.7), fontFamily: "Saira")),
+                    const SizedBox(height: 15),
+                    Text("Skills", style: TextStyle(fontWeight: FontWeight.bold, fontSize: 18, color: theme.colorScheme.primary, fontFamily: "Saira")),
+                    Wrap(
+                      spacing: 8,
+                      children: artisan.skills.map((skill) => Chip(
+                        label: Text(skill, style: const TextStyle(fontSize: 12)),
+                        backgroundColor: theme.colorScheme.surface,
+                        side: BorderSide(color: theme.colorScheme.primary.withOpacity(0.3)),
+                      )).toList(),
                     ),
                     const SizedBox(height: 40),
-                    SizedBox(
-                      height: 60,
-                      width: width * 0.9,
-                      child: TextButton.icon(
-                        label: const Text("CONTACT VIA INSTAGRAM", style: TextStyle(color: Colors.white, fontSize: 18, fontFamily: "Saira")), 
-                        onPressed: () {
-                          _launchURL(artisan.username);
-                        },
-                        style: ButtonStyle(
-                          backgroundColor: WidgetStateProperty.all(const Color.fromRGBO(252, 184, 25, 1)),
-                          shape: WidgetStateProperty.all(RoundedRectangleBorder(borderRadius: BorderRadius.circular(12))),
-                        ),
-                        icon: const ImageIcon(
-                          AssetImage('assets/icons/icons8-instagram-50.png'),
-                          color: Colors.white,
-                          size: 30,
+                    Center(
+                      child: SizedBox(
+                        height: 60,
+                        width: width * 0.9,
+                        child: TextButton.icon(
+                          label: const Text("CONTACT VIA INSTAGRAM", style: TextStyle(fontSize: 18, fontFamily: "Saira")), 
+                          onPressed: () {
+                            _launchURL(artisan.username);
+                          },
+                          style: ElevatedButton.styleFrom(
+                            backgroundColor: theme.colorScheme.primary,
+                            foregroundColor: theme.colorScheme.onPrimary,
+                          ),
+                          icon: const ImageIcon(
+                            AssetImage('assets/icons/icons8-instagram-50.png'),
+                            size: 30,
+                          ),
                         ),
                       ),
                     ),
-                    const SizedBox(height: 20),
-                    items.isEmpty ? const Center(child: Text("No products found", style: TextStyle(color: Colors.white, fontSize: 20, fontFamily: "Saira"))) :
+                    const SizedBox(height: 30),
+                    const Text("Products", style: TextStyle(fontWeight: FontWeight.bold, fontSize: 22, fontFamily: "Saira")),
+                    items.isEmpty ? Padding(
+                      padding: const EdgeInsets.symmetric(vertical: 20),
+                      child: Center(child: Text("No products found", style: TextStyle(color: theme.colorScheme.onSurface.withOpacity(0.5), fontSize: 18, fontFamily: "Saira"))),
+                    ) :
                     GridView.builder(
                       shrinkWrap: true,
                       physics: const NeverScrollableScrollPhysics(),
                       controller: scrollController,
-                      padding: const EdgeInsets.all(10),
+                      padding: const EdgeInsets.symmetric(vertical: 10),
                       gridDelegate: const SliverGridDelegateWithMaxCrossAxisExtent(
                         maxCrossAxisExtent: 250,
                         crossAxisSpacing: 10,
@@ -114,7 +111,7 @@ class ArtisanView extends StatelessWidget {
                       itemBuilder: (context, index) {
                         final item = items[index];
                         return InkWell(
-                          onTap: () async{
+                          onTap: () {
                             final u = Customer(username: "", fullName: "", location: "", id: "");
                             Navigator.push(
                               context,
@@ -124,8 +121,9 @@ class ArtisanView extends StatelessWidget {
                           borderRadius: BorderRadius.circular(8),
                           child: Container(
                               decoration: BoxDecoration(
-                                color: Colors.grey[900],
+                                color: theme.colorScheme.surface,
                                 borderRadius: BorderRadius.circular(8),
+                                border: Border.all(color: theme.colorScheme.onSurface.withOpacity(0.05)),
                               ),
                               child: ClipRRect(
                                   borderRadius: BorderRadius.circular(8),
@@ -138,18 +136,17 @@ class ArtisanView extends StatelessWidget {
                                                 item.imageUrl!,
                                                 fit: BoxFit.cover,
                                                 errorBuilder: (context, error, stackTrace) => Container(
-                                                  color: Colors.grey[800],
-                                                  child: const Icon(Icons.broken_image, color: Colors.white54, size: 40),
+                                                  color: theme.colorScheme.surface,
+                                                  child: const Icon(Icons.broken_image, size: 40),
                                                 ),
                                               )
-                                            : Container(color: Colors.grey[800], child: const Icon(Icons.image, color: Colors.white54, size: 40)),
+                                            : Container(color: theme.colorScheme.surface, child: const Icon(Icons.image, size: 40)),
                                         ),
                                         Padding(
                                           padding: const EdgeInsets.all(8.0),
                                           child: Text(
                                             item.title,
                                             style: const TextStyle(
-                                              color: Colors.white,
                                               fontSize: 16,
                                               fontWeight: FontWeight.bold,
                                               fontFamily: "Saira"

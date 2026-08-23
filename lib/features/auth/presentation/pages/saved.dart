@@ -64,7 +64,9 @@ class _SavedState extends State<Saved> {
 
   @override
   Widget build(BuildContext context) {
-    return saved.isEmpty ? const Center(child: Text("No saved products",style: TextStyle(color: Colors.white, fontFamily: "Saira", fontSize: 20))) :
+    final theme = Theme.of(context);
+    
+    return saved.isEmpty ? Center(child: Text("No saved products",style: TextStyle(color: theme.colorScheme.onSurface.withOpacity(0.5), fontFamily: "Saira", fontSize: 20))) :
     GridView.builder(
       controller: _scrollController,
       padding: const EdgeInsets.all(10),
@@ -90,8 +92,16 @@ class _SavedState extends State<Saved> {
           borderRadius: BorderRadius.circular(8),
           child: Container(
               decoration: BoxDecoration(
-                color: Colors.grey[900],
+                color: theme.colorScheme.surface,
                 borderRadius: BorderRadius.circular(8),
+                boxShadow: theme.brightness == Brightness.light ? [
+                  BoxShadow(
+                    color: Colors.black.withValues(alpha: 0.05),
+                    blurRadius: 8,
+                    offset: const Offset(0, 4),
+                  )
+                ] : null,
+                border: Border.all(color: theme.colorScheme.onSurface.withValues(alpha: 0.05)),
               ),
               child: ClipRRect(
                   borderRadius: BorderRadius.circular(8),
@@ -99,25 +109,49 @@ class _SavedState extends State<Saved> {
                       crossAxisAlignment: CrossAxisAlignment.stretch,
                       children: [
                         Expanded(
-                          child: item.imageUrl != null 
+                          child: item.imageUrl != null
                             ? Image.network(
                                 item.imageUrl!,
                                 fit: BoxFit.cover,
+                                loadingBuilder:
+                                    (context, child, loadingProgress) {
+                                      if (loadingProgress == null) return child;
+                                      return Center(
+                                        child: CircularProgressIndicator(
+                                          value: loadingProgress.expectedTotalBytes != null
+                                            ? loadingProgress.cumulativeBytesLoaded / loadingProgress.expectedTotalBytes!
+                                            : null,
+                                          color: theme.colorScheme.primary,
+                                        ),
+                                      );
+                                },
                                 errorBuilder: (context, error, stackTrace) => Container(
-                                  color: Colors.grey[800],
-                                  child: const Icon(Icons.broken_image, color: Colors.white54, size: 40),
+                                  color: theme.colorScheme.surface,
+                                  child: Icon(
+                                    Icons.broken_image,
+                                    color: theme.colorScheme.onSurface.withOpacity(0.3),
+                                    size: 40,
+                                  ),
                                 ),
                               )
-                            : Container(color: Colors.grey[800], child: const Icon(Icons.image, color: Colors.white54, size: 40)),
+                            :  Container(
+                            color: theme.colorScheme.surface,
+                            child: Icon(
+                              Icons.image,
+                              color: theme.colorScheme.onSurface.withOpacity(0.3),
+                              size: 40,
+                            ),
+                          ),
                         ),
                         Padding(
                           padding: const EdgeInsets.all(8.0),
                           child: Text(
                             item.title,
-                            style: const TextStyle(
-                              color: Colors.white,
+                            style: TextStyle(
+                              color: theme.colorScheme.onSurface,
+                              fontFamily: "Saira",
                               fontSize: 16,
-                              fontWeight: FontWeight.bold, fontFamily: "Saira"
+                              fontWeight: FontWeight.bold,
                             ),
                             textAlign: TextAlign.center,
                             maxLines: 2,

@@ -85,8 +85,15 @@ class _HomescreenState extends State<Homescreen> {
           ),
       ],
     ):
-        const Center(
-          child:  Text("No products found", style: TextStyle(color: Colors.white, fontSize: 20, fontFamily: "Saira"),),
+        Center(
+          child: Text(
+            "No products found",
+            style: TextStyle(
+              color: Theme.of(context).colorScheme.onSurface.withOpacity(0.5),
+              fontSize: 20,
+              fontFamily: "Saira",
+            ),
+          ),
         );
   }
 }

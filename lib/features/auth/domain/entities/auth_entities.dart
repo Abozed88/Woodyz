@@ -4,7 +4,6 @@ class User {
   String fullName;
   String? avatarUrl;
   String role;
-  String? bio;
   String? phone;
   String location;
 
@@ -14,7 +13,6 @@ class User {
     required this.fullName,
     this.avatarUrl,
     required this.role,
-    this.bio,
     this.phone,
     required this.location,
   });
@@ -26,7 +24,6 @@ class User {
       fullName: json['full_name'] ?? '',
       avatarUrl: json['avatar_url'],
       role: json['role'] ?? 'customer',
-      bio: json['bio'],
       phone: json['phone'],
       location: json['location'] ?? '',
     );
@@ -39,7 +36,6 @@ class User {
       'full_name': fullName,
       'avatar_url': avatarUrl,
       'role': role,
-      'bio': bio,
       'phone': phone,
       'location': location,
     };
@@ -54,7 +50,6 @@ class Customer extends User {
     required super.username,
     required super.fullName,
     super.avatarUrl,
-    super.bio,
     super.phone,
     required super.location,
     this.address,
@@ -66,7 +61,6 @@ class Customer extends User {
       username: profile.username,
       fullName: profile.fullName,
       avatarUrl: profile.avatarUrl,
-      bio: profile.bio,
       phone: profile.phone,
       location: profile.location,
       address: address,
@@ -80,6 +74,9 @@ class Customer extends User {
 }
 
 class Artisan extends User {
+  String? bio;
+  List<String> skills;
+  String? address;
   double rating;
 
   Artisan({
@@ -87,27 +84,60 @@ class Artisan extends User {
     required super.username,
     required super.fullName,
     super.avatarUrl,
-    super.bio,
     super.phone,
     required super.location,
+    this.bio,
+    this.skills = const [],
+    this.address,
     this.rating = 0.0,
   }) : super(role: 'artisan');
 
-  factory Artisan.fromProfile(User profile, {double rating = 0.0}) {
+  factory Artisan.fromProfile(User profile, {
+    String? bio,
+    List<String> skills = const [],
+    String? address,
+    double rating = 0.0,
+  }) {
     return Artisan(
       id: profile.id,
       username: profile.username,
       fullName: profile.fullName,
       avatarUrl: profile.avatarUrl,
-      bio: profile.bio,
       phone: profile.phone,
       location: profile.location,
+      bio: bio,
+      skills: skills,
+      address: address,
       rating: rating,
     );
   }
 
+  factory Artisan.fromJson(Map<String, dynamic> json) {
+    final profile = User.fromJson(json);
+    final artisanData = json['artisans'] != null ? 
+        (json['artisans'] is List ? json['artisans'][0] : json['artisans']) : null;
+    
+    return Artisan.fromProfile(
+      profile,
+      bio: artisanData?['bio'],
+      skills: artisanData?['skills'] != null ? List<String>.from(artisanData['skills']) : [],
+      address: artisanData?['address'],
+      rating: (artisanData?['rating'] ?? 0.0).toDouble(),
+    );
+  }
+
+  Map<String, dynamic> toArtisanJson() {
+    return {
+      'id': id,
+      'bio': bio,
+      'skills': skills,
+      'address': address,
+      'rating': rating,
+    };
+  }
+
   @override
   String toString() {
-    return 'Artisan(id: $id, username: $username, fullName: $fullName, avatarUrl: $avatarUrl, rating: $rating, bio: $bio, location: $location)';
+    return 'Artisan(id: $id, username: $username, fullName: $fullName, avatarUrl: $avatarUrl, rating: $rating, bio: $bio, skills: $skills, location: $location)';
   }
 }

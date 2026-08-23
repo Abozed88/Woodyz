@@ -37,13 +37,15 @@ class _DetailsState extends State<Details> {
 
   @override
   Widget build(BuildContext context) {
-    double width = MediaQuery.of(context).size.width;
+    final theme = Theme.of(context);
+    final primaryColor = theme.colorScheme.primary;
+
     return Scaffold(
       appBar: AppBar(
-        backgroundColor: const Color.fromRGBO(252, 184, 25, 1),
-        leading: IconButton(onPressed: (){
-          Navigator.pop(context);
-        }, icon: const Icon(Icons.arrow_back_rounded)),
+        leading: IconButton(
+          onPressed: () => Navigator.pop(context), 
+          icon: const Icon(Icons.arrow_back_ios_new, size: 20),
+        ),
         actions:(widget.asArtisan == true || widget.u == null) ? null :
         [
           IconButton(
@@ -59,18 +61,19 @@ class _DetailsState extends State<Details> {
                     _saved = true;
                   });
                   ScaffoldMessenger.of(context).showSnackBar(
-                    const SnackBar(
+                    SnackBar(
                       content: Row(
                         mainAxisAlignment: MainAxisAlignment.center,
                         children: [
-                          Icon(Icons.favorite, color: Color.fromRGBO(252, 184, 25, 1),),
-                          Text("Added to favorites!", style: TextStyle(color: Color.fromRGBO(252, 184, 25, 1),),),
+                          Icon(Icons.favorite, color: primaryColor),
+                          const SizedBox(width: 8),
+                          Text("Added to favorites!", style: TextStyle(color: primaryColor)),
                         ],
                       ),
-                      backgroundColor: Colors.black54,
+                      backgroundColor: theme.colorScheme.surface,
                       showCloseIcon: true,
-                      closeIconColor: Color.fromRGBO(252, 184, 25, 1),
-                      duration: Duration(seconds: 4),
+                      closeIconColor: primaryColor,
+                      duration: const Duration(seconds: 4),
                     ),
                   );
                 }
@@ -84,16 +87,17 @@ class _DetailsState extends State<Details> {
                     _saved = false;
                   });
                   ScaffoldMessenger.of(context).showSnackBar(
-                    const SnackBar(
+                    SnackBar(
                       content: Row(
                         mainAxisAlignment: MainAxisAlignment.center,
                         children: [
-                          Icon(Icons.favorite_border_outlined, color: Color.fromRGBO(252, 184, 25, 1),),
-                          Text("Removed from favorites!", style: TextStyle(color: Color.fromRGBO(252, 184, 25, 1),),),
+                          Icon(Icons.favorite_border_outlined, color: primaryColor),
+                          const SizedBox(width: 8),
+                          Text("Removed from favorites!", style: TextStyle(color: primaryColor)),
                         ],
                       ),
-                      backgroundColor: Colors.black54,
-                      duration: Duration(seconds: 4),
+                      backgroundColor: theme.colorScheme.surface,
+                      duration: const Duration(seconds: 4),
                     ),
                   );
                 }
@@ -105,77 +109,165 @@ class _DetailsState extends State<Details> {
           ),
         ],
       ),
-      backgroundColor: Colors.black,
       body: SingleChildScrollView(
         child: Column(
           children: [
             Padding(
-                padding: const EdgeInsets.symmetric(horizontal: 15),
+                padding: const EdgeInsets.symmetric(horizontal: 20, vertical: 20),
                 child: Column(
+                    crossAxisAlignment: CrossAxisAlignment.start,
                     children: [
-                      if (widget.p.imageUrl != null)
-                        Image.network(
-                          widget.p.imageUrl!,
-                          fit: BoxFit.cover,
-                          errorBuilder: (context, error, stackTrace) => Container(
-                            color: Colors.grey[800],
-                            child: const Icon(Icons.broken_image, color: Colors.white54, size: 40),
+                      // Product Image
+                      ClipRRect(
+                        borderRadius: BorderRadius.circular(20),
+                        child: widget.p.imageUrl != null
+                          ? Image.network(
+                              widget.p.imageUrl!,
+                              width: double.infinity,
+                              height: 400,
+                              fit: BoxFit.cover,
+                              errorBuilder: (context, error, stackTrace) => Container(
+                                height: 400,
+                                color: theme.colorScheme.surface,
+                                child: const Icon(Icons.broken_image, size: 64, color: Colors.white24),
+                              ),
+                            )
+                          : Container(
+                              height: 400,
+                              color: theme.colorScheme.surface,
+                              child: const Icon(Icons.image, size: 64, color: Colors.white24),
+                            ),
+                      ),
+                      const SizedBox(height: 24),
+
+                      // Category Chip
+                      Container(
+                        padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 6),
+                        decoration: BoxDecoration(
+                          color: primaryColor.withOpacity(0.1),
+                          borderRadius: BorderRadius.circular(20),
+                          border: Border.all(color: primaryColor.withOpacity(0.3)),
+                        ),
+                        child: Text(
+                          widget.p.category.toUpperCase(),
+                          style: TextStyle(
+                            color: primaryColor,
+                            fontFamily: "Saira",
+                            fontSize: 10,
+                            fontWeight: FontWeight.bold,
+                            letterSpacing: 1,
                           ),
                         ),
-                      const SizedBox(height: 20),
-                      Text(widget.p.title, style: const TextStyle(color: Colors.white, fontFamily: "Saira", fontSize: 30, fontWeight: FontWeight.bold),),
-                      TextButton(onPressed: (){}, child: Text(widget.p.category, style: const TextStyle(color: Color.fromRGBO(252, 184, 25, 1), fontFamily: "Saira",fontSize: 12))),
-                      const SizedBox(height: 20),
+                      ),
+                      const SizedBox(height: 12),
+
+                      // Title and Rating
                       Row(
-                        mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                        crossAxisAlignment: CrossAxisAlignment.start,
                         children: [
-                          Text("\$${widget.p.price}", style: const TextStyle(color: Colors.white, fontSize: 25, fontFamily: "Saira"),),
-                          Row(
-                            mainAxisAlignment: MainAxisAlignment.center,
-                            children: [
-                              const Icon(Icons.star, color: Color.fromRGBO(252, 184, 25, 1),),
-                              const Text("4.5",style: TextStyle(color: Color.fromRGBO(252, 184, 25, 1), fontSize: 25, fontFamily: "Saira"),),
-                              Text("(128 reviews)", style: TextStyle(color: Colors.grey[350], fontSize: 18, fontFamily: "Saira"),),
-                            ],
-                          )
+                          Expanded(
+                            child: Text(
+                              widget.p.title,
+                              style: const TextStyle(
+                                fontSize: 32,
+                                fontWeight: FontWeight.bold,
+                                fontFamily: "Saira",
+                              ),
+                            ),
+                          ),
+                          const SizedBox(width: 16),
+                          Container(
+                            padding: const EdgeInsets.all(8),
+                            decoration: BoxDecoration(
+                              color: theme.colorScheme.surface,
+                              borderRadius: BorderRadius.circular(12),
+                            ),
+                            child: Row(
+                              children: [
+                                Icon(Icons.star_rounded, color: primaryColor, size: 20),
+                                const SizedBox(width: 4),
+                                const Text("4.5", style: TextStyle(fontWeight: FontWeight.bold)),
+                              ],
+                            ),
+                          ),
                         ],
                       ),
-                      const SizedBox(height: 20,),
-                      const Divider(color: Colors.grey, thickness: 2,),
-                      const SizedBox(height: 20,),
-                      Widget1(p: widget.p),
-                      const SizedBox(height: 20,),
-                      const Divider(color: Colors.grey, thickness: 2,),
-                      const SizedBox(height: 20,),
-                      const Text("Description", style: TextStyle(color: Colors.white, fontSize: 25, fontWeight: FontWeight.bold, fontFamily: "Saira"),),
-                      Text(widget.p.description, style: TextStyle(color: Colors.grey[350], fontSize: 18, fontStyle: FontStyle.italic, fontFamily: "Saira"),),
-                      const SizedBox(height: 20,),
-                      Widget2(artisan: widget.a),
-                      const SizedBox(height: 20,),
-                      const Divider(color: Colors.grey, thickness: 2,),
-                      const SizedBox(height: 20,),
-                      SizedBox(
-                        height: 60,
-                        width: width*0.9,
-                        child: TextButton.icon(
-                          label: const Text("ORDER VIA INSTAGRAM", style: TextStyle(color: Colors.white, fontSize: 20, fontFamily: "Saira"),),
-                          onPressed: (){
-                            // Assuming link is stored somewhere, maybe profile bio? Or product has a link?
-                            // For now using artisan's username as handle
-                            _launchURL(widget.a.username);
-                          },
-                          style: ButtonStyle(
-                            backgroundColor: WidgetStateProperty.all(const Color.fromRGBO(252, 184, 25, 1)),
-                            shape: WidgetStateProperty.all(RoundedRectangleBorder(borderRadius: BorderRadius.circular(12))),
-                          ),
-                          icon: const ImageIcon(
-                            AssetImage('assets/icons/icons8-instagram-50.png'),
-                            color: Colors.white,
-                            size: 30,
-                          ),
+                      const SizedBox(height: 24),
+
+                      // Price
+                      Text(
+                        "\$${widget.p.price.toStringAsFixed(2)}",
+                        style: TextStyle(
+                          color: primaryColor,
+                          fontSize: 28,
+                          fontWeight: FontWeight.bold,
+                          fontFamily: "Saira",
                         ),
                       ),
-                      const SizedBox(height: 20,),
+                      const SizedBox(height: 24),
+
+                      const Divider(thickness: 1),
+                      const SizedBox(height: 24),
+
+                      // Info Widgets
+                      Widget1(p: widget.p),
+                      const SizedBox(height: 32),
+
+                      const Text(
+                        "Description",
+                        style: TextStyle(
+                          fontSize: 20,
+                          fontWeight: FontWeight.bold,
+                          fontFamily: "Saira",
+                        ),
+                      ),
+                      const SizedBox(height: 8),
+                      Text(
+                        widget.p.description,
+                        style: TextStyle(
+                          color: theme.colorScheme.onSurface.withOpacity(0.6),
+                          fontSize: 16,
+                          height: 1.5,
+                          fontFamily: "Saira",
+                        ),
+                      ),
+                      const SizedBox(height: 32),
+
+                      // Artisan Card
+                      const Text(
+                        "About the Artisan",
+                        style: TextStyle(
+                          fontSize: 20,
+                          fontWeight: FontWeight.bold,
+                          fontFamily: "Saira",
+                        ),
+                      ),
+                      const SizedBox(height: 16),
+                      Widget2(artisan: widget.a),
+                      const SizedBox(height: 40),
+
+                      // Order Button
+                      ElevatedButton(
+                        onPressed: () => _launchURL(widget.a.username),
+                        style: ElevatedButton.styleFrom(
+                          minimumSize: const Size(double.infinity, 60),
+                        ),
+                        child: Row(
+                          mainAxisAlignment: MainAxisAlignment.center,
+                          children: [
+                            const ImageIcon(
+                              AssetImage('assets/icons/icons8-instagram-50.png'),
+                              size: 24,
+                            ),
+                            const SizedBox(width: 12),
+                            const Text(
+                              "REQUEST TO ORDER",
+                              style: TextStyle(letterSpacing: 1.5),
+                            ),
+                          ],
+                        ),
+                      ),
+                      const SizedBox(height: 40),
                     ]
                 )
             ),

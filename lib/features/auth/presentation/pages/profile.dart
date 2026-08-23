@@ -25,12 +25,17 @@ class _ProfileState extends State<Profile> {
   }
   @override
   Widget build(BuildContext context) {
+    final theme = Theme.of(context);
+    
     return Stack(
       children: [
         Positioned(
           top: 10,
           right: 10,
-          child: IconButton(onPressed: (){}, icon: const Icon(Icons.settings, color: Colors.white,)),
+          child: IconButton(
+            onPressed: (){}, 
+            icon: Icon(Icons.settings, color: theme.colorScheme.onSurface),
+          ),
         ),
         SingleChildScrollView(
           child: Column(
@@ -39,76 +44,68 @@ class _ProfileState extends State<Profile> {
                 child: Column(
                   children: [
                     const SizedBox(height: 50,),
-                    PImage(image_url: widget.c == null? widget.a!.avatarUrl : widget.c!.avatarUrl,),
+                    PImage(image_url: u.avatarUrl),
                     const SizedBox(height: 10),
-                    Text(u.name, style: const TextStyle(fontWeight: FontWeight.bold, fontFamily: "Saira", fontSize: 25, color: Colors.white,),),
-                    Text(u.type == "cust" ? "Customer" : "Artisan", style: const TextStyle(color: Color.fromRGBO(252, 184, 25, 1), fontFamily: "Saira"),),
+                    Text(
+                      u.fullName, 
+                      style: TextStyle(
+                        fontWeight: FontWeight.bold, 
+                        fontFamily: "Saira", 
+                        fontSize: 25, 
+                        color: theme.colorScheme.onSurface,
+                      ),
+                    ),
+                    Text(
+                      u.role == "customer" ? "Customer" : "Artisan", 
+                      style: TextStyle(color: theme.colorScheme.primary, fontFamily: "Saira"),
+                    ),
                     const SizedBox(height: 20),
                   ],
                 ),
               ),
-              u is Customer ?
               Padding(
                 padding: const EdgeInsets.symmetric(horizontal: 40),
                 child: Column(
+                  crossAxisAlignment: CrossAxisAlignment.start,
                   children: [
-                    Row(
-                        crossAxisAlignment: CrossAxisAlignment.start,
-                        children: [
-                          const SizedBox(
-                            width: 80,
-                            child: Text("Phone", style: TextStyle(fontWeight: FontWeight.bold, fontFamily: "Saira", fontSize: 15, color: Color.fromRGBO(252, 184, 25, 1))),
+                    if (u is Customer) ...[
+                      _buildProfileRow(context, "Phone", u.phone ?? "N/A"),
+                      const SizedBox(height: 15),
+                      _buildProfileRow(context, "Address", (u as Customer).address ?? "N/A"),
+                    ] else if (u is Artisan) ...[
+                      _buildProfileRow(context, "Bio", (u as Artisan).bio ?? "N/A"),
+                      const SizedBox(height: 15),
+                      _buildProfileRow(context, "Address", (u as Artisan).address ?? "N/A"),
+                      const SizedBox(height: 15),
+                      Text(
+                        "Skills", 
+                        style: TextStyle(
+                          fontWeight: FontWeight.bold, 
+                          fontSize: 15, 
+                          color: theme.colorScheme.primary, 
+                          fontFamily: "Saira",
+                        ),
+                      ),
+                      const SizedBox(height: 5),
+                      Wrap(
+                        spacing: 8,
+                        children: (u as Artisan).skills.map((skill) => Chip(
+                          label: Text(
+                            skill, 
+                            style: TextStyle(
+                              fontSize: 10, 
+                              color: theme.brightness == Brightness.dark ? Colors.white : theme.colorScheme.onSurface,
+                            ),
                           ),
-                          Expanded(
-                            child: Text(u.phone ?? "N/A", style: const TextStyle(fontWeight: FontWeight.bold, fontFamily: "Saira", fontSize: 15, color: Colors.white,)),
-                          ),
-                        ]
-                    ),
+                          backgroundColor: theme.colorScheme.surface,
+                          side: BorderSide(color: theme.colorScheme.primary.withOpacity(0.3)),
+                          padding: EdgeInsets.zero,
+                          materialTapTargetSize: MaterialTapTargetSize.shrinkWrap,
+                        )).toList(),
+                      ),
+                    ],
                     const SizedBox(height: 15),
-                    Row(
-                        crossAxisAlignment: CrossAxisAlignment.start,
-                        children: [
-                          const SizedBox(
-                            width: 80,
-                            child: Text("Address", style: TextStyle(fontWeight: FontWeight.bold, fontFamily: "Saira", fontSize: 15, color: Color.fromRGBO(252, 184, 25, 1),)),
-                          ),
-                          Expanded(
-                            child: Text(u.address ?? "N/A", style: const TextStyle(fontWeight: FontWeight.bold, fontFamily: "Saira", fontSize: 15, color: Colors.white,)),
-                          ),
-                        ]
-                    )
-                  ],
-                ),
-              )
-                  : Padding(
-                padding: const EdgeInsets.symmetric(horizontal: 40),
-                child: Column(
-                  children: [
-                    Row(
-                        crossAxisAlignment: CrossAxisAlignment.start,
-                        children: [
-                          const SizedBox(
-                            width: 80,
-                            child: Text("Shop", style: TextStyle(fontWeight: FontWeight.bold, fontSize: 15, fontFamily: "Saira", color: Color.fromRGBO(252, 184, 25, 1),)),
-                          ),
-                          Expanded(
-                            child: Text(u.shop ?? "N/A", style: const TextStyle(fontWeight: FontWeight.bold, fontSize: 15, fontFamily: "Saira", color: Colors.white,)),
-                          ),
-                        ]
-                    ),
-                    const SizedBox(height: 15),
-                    Row(
-                        crossAxisAlignment: CrossAxisAlignment.start,
-                        children: [
-                          const SizedBox(
-                            width: 80,
-                            child: Text("Skills", style: TextStyle(fontWeight: FontWeight.bold, fontSize: 15, fontFamily: "Saira", color: Color.fromRGBO(252, 184, 25, 1),)),
-                          ),
-                          Expanded(
-                            child: Text(u.skills == null ? "No skills" : u.skills!.join(', '), style: const TextStyle(fontWeight: FontWeight.bold, fontFamily: "Saira", fontSize: 15, color: Colors.white,)),
-                          ),
-                        ]
-                    )
+                    _buildProfileRow(context, "Location", u.location),
                   ],
                 ),
               ),
@@ -118,6 +115,38 @@ class _ProfileState extends State<Profile> {
           ),
         )
       ],
+    );
+  }
+
+  Widget _buildProfileRow(BuildContext context, String label, String value) {
+    final theme = Theme.of(context);
+    return Row(
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: [
+          SizedBox(
+            width: 80,
+            child: Text(
+              label, 
+              style: TextStyle(
+                fontWeight: FontWeight.bold, 
+                fontFamily: "Saira", 
+                fontSize: 15, 
+                color: theme.colorScheme.primary,
+              ),
+            ),
+          ),
+          Expanded(
+            child: Text(
+              value, 
+              style: TextStyle(
+                fontWeight: FontWeight.bold, 
+                fontFamily: "Saira", 
+                fontSize: 15, 
+                color: theme.colorScheme.onSurface,
+              ),
+            ),
+          ),
+        ]
     );
   }
 }

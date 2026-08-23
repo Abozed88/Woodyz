@@ -1,4 +1,5 @@
 import 'dart:io';
+import 'package:flutter/foundation.dart';
 import 'package:supabase_flutter/supabase_flutter.dart' as sb;
 import 'package:woodyz/features/auth/presentation/providers/auth_provider.dart';
 import 'package:woodyz/features/products/domain/entities/product_entity.dart';
@@ -34,7 +35,7 @@ class ProductsProvider {
 
       return (response as List).map((json) => Product.fromJson(json)).toList();
     } catch (e) {
-      print("Error in fetchData: $e");
+      debugPrint("Error in fetchData: $e");
       rethrow;
     }
   }
@@ -43,11 +44,11 @@ class ProductsProvider {
     try {
       final profileData = await supabase
           .from('profiles')
-          .select()
+          .select('*, artisans(*)')
           .eq('id', artisanId)
           .single();
 
-      return Artisan.fromProfile(User.fromJson(profileData));
+      return Artisan.fromJson(profileData);
     } catch (e) {
       throw Exception("Error fetching artisan data: $e");
     }
@@ -88,7 +89,7 @@ class ProductsProvider {
       }
       return newProduct;
     } catch (e) {
-      print("Error in addProduct: $e");
+      debugPrint("Error in addProduct: $e");
       return null;
     }
   }
@@ -101,7 +102,7 @@ class ProductsProvider {
       });
       return true;
     } catch (e) {
-      print("Error in saveProduct: $e");
+      debugPrint("Error in saveProduct: $e");
       return false;
     }
   }
@@ -114,7 +115,7 @@ class ProductsProvider {
           .match({'user_id': userId, 'product_id': productId});
       return true;
     } catch (e) {
-      print("Error in unsaveProduct: $e");
+      debugPrint("Error in unsaveProduct: $e");
       return false;
     }
   }
@@ -131,7 +132,7 @@ class ProductsProvider {
           .map((json) => Product.fromJson(json['products']))
           .toList();
     } catch (e) {
-      print("Error in fetchSaved: $e");
+      debugPrint("Error in fetchSaved: $e");
       rethrow;
     }
   }

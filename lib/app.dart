@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:woodyz/core/theme/app_theme.dart';
 import 'package:woodyz/features/auth/presentation/pages/login.dart';
 
 class MyApp extends StatelessWidget {
@@ -9,7 +10,10 @@ class MyApp extends StatelessWidget {
     return MaterialApp(
       debugShowCheckedModeBanner: false,
       title: "woodyz",
-      home: Login(),
+      theme: AppTheme.lightTheme,
+      darkTheme: AppTheme.darkTheme,
+      themeMode: ThemeMode.system,
+      home: const Login(),
     );
   }
 }

@@ -5,7 +5,6 @@ import 'package:woodyz/features/auth/presentation/providers/auth_provider.dart';
 import 'package:image_picker/image_picker.dart';
 import 'package:woodyz/core/widgets/custom_text_field.dart';
 import 'package:woodyz/features/products/presentation/providers/products_provider.dart';
-import 'package:fluttertoast/fluttertoast.dart';
 
 class Upload extends StatefulWidget {
   final Artisan artisan;
@@ -22,6 +21,7 @@ class _UploadState extends State<Upload> {
 
   File? _image;
   final ImagePicker _picker = ImagePicker();
+  bool _isUploading = false;
 
   Future<void> _pickImage() async {
     final XFile? pickedFile =
@@ -46,125 +46,135 @@ class _UploadState extends State<Upload> {
 
   @override
   Widget build(BuildContext context) {
-    double width = MediaQuery.of(context).size.width;
-
+    final theme = Theme.of(context);
+    final primaryColor = theme.colorScheme.primary;
+    
     return Container(
-      color: const Color.fromRGBO(30, 30, 30, 1),
+      color: theme.scaffoldBackgroundColor,
       child: SingleChildScrollView(
-        padding: const EdgeInsets.symmetric(horizontal: 20),
+        padding: const EdgeInsets.symmetric(horizontal: 24, vertical: 32),
         child: Form(
           key: _key,
           child: Column(
+            crossAxisAlignment: CrossAxisAlignment.stretch,
             children: [
-              const SizedBox(height: 25),
-              const Text("Add your creation",
-                  style: TextStyle(fontSize: 25, color: Colors.white, fontWeight: FontWeight.bold)),
-              const Text("Your product, your spotlight",
-                  style: TextStyle(fontSize: 14, color: Colors.grey, fontFamily: "Saira")),
-              const SizedBox(height: 25),
-
-              const Text("Product Image", style: TextStyle(color: Colors.white, fontSize: 14, fontFamily: "Saira")),
-              const SizedBox(height: 10),
-
-              Container(
-                width: 200,
-                height: 200,
-                decoration: BoxDecoration(
-                  borderRadius: BorderRadius.circular(20),
-                  color: const Color.fromRGBO(46, 46, 45, 1),
-                  border: Border.all(
-                    color: const Color.fromRGBO(252, 184, 25, 1),
-                    width: 1.5,
-                  ),
-                ),
-                child: _image == null
-                    ? Center(
-                  child: IconButton(
-                    onPressed: () => _pickImage(),
-                    icon: const Icon(Icons.add,
-                        color: Color.fromRGBO(252, 184, 25, 1)),
-                  ),
-                )
-                    : ClipRRect(
-                  borderRadius: BorderRadius.circular(20),
-                  child: Image.file(_image!, fit: BoxFit.cover),
+              Text(
+                "Add your creation",
+                textAlign: TextAlign.center,
+                style: TextStyle(
+                  fontSize: 28, 
+                  fontWeight: FontWeight.bold, 
+                  fontFamily: "Saira",
+                  color: theme.colorScheme.onSurface,
                 ),
               ),
-
-              const SizedBox(height: 20),
-              const Text("Product Name", style: TextStyle(color: Colors.white, fontSize: 14, fontFamily: "Saira")),
-              SizedBox(
-                width: width * 0.8,
-                child: CustomTextField(hint: "product name", controller: _namecontroller),
+              const SizedBox(height: 8),
+              Text(
+                "Your product, your spotlight",
+                textAlign: TextAlign.center,
+                style: TextStyle(
+                  fontSize: 14, 
+                  color: theme.colorScheme.onSurface.withValues(alpha: 0.5),
+                  fontFamily: "Saira",
+                ),
               ),
-
-              const SizedBox(height: 20),
-              const Text("Description", style: TextStyle(color: Colors.white, fontSize: 14, fontFamily: "Saira")),
-              SizedBox(
-                width: width * 0.8,
-                child: CustomTextField(hint: "describe..", controller: _desccontroller),
-              ),
-
-              const SizedBox(height: 20),
-              ChooseCategory(p: p),
-
-              const SizedBox(height: 20),
-              Row(
-                mainAxisAlignment: MainAxisAlignment.center,
-                children: [
-                  const Text("Price (in \$):", style: TextStyle(color: Colors.white, fontSize: 14, fontFamily: "Saira")),
-                  const SizedBox(width: 15),
-                  NumberIndicator(p: p),
-                ],
-              ),
-
               const SizedBox(height: 40),
-              ElevatedButton(
-                onPressed: () async{
-                  if (_key.currentState!.validate()) {
-                    try {
-                      p.title = _namecontroller.text;
-                      p.description = _desccontroller.text;
-                      p.artisanId = widget.artisan.id;
-                      ProductsProvider PC = ProductsProvider();
-                      final newProduct = await PC.addProduct(p, _image);
-                      if(newProduct != null){
-                        Fluttertoast.showToast(
-                            msg: "Upload Successful!",
-                            toastLength: Toast.LENGTH_SHORT,
-                            gravity: ToastGravity.BOTTOM,
-                            backgroundColor: const Color.fromRGBO(252, 184, 25, 1),
-                            textColor: Colors.white,
-                            fontSize: 16.0);
-                        reset();
-                      }
-                      else{
-                        Fluttertoast.showToast(
-                            msg: "Upload Failed!!",
-                            toastLength: Toast.LENGTH_LONG,
-                            gravity: ToastGravity.BOTTOM,
-                            backgroundColor: Colors.red,
-                            textColor: Colors.white,
-                            fontSize: 16.0,
-                        );
-                      }
-                    } catch (e) {
-                      Fluttertoast.showToast(
-                          msg: "Upload Failed: ${e.toString()}",
-                          toastLength: Toast.LENGTH_LONG,
-                          gravity: ToastGravity.BOTTOM,
-                          backgroundColor: Colors.red,
-                          textColor: Colors.white,
-                          fontSize: 16.0);
-                    }
-                  }
-                },
-                style: ElevatedButton.styleFrom(
-                  backgroundColor: const Color.fromRGBO(252, 184, 25, 1),
-                  minimumSize: Size(width * 0.6, 50),
-                  shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(10)),
+
+              // Image Picker
+              Center(
+                child: GestureDetector(
+                  onTap: _pickImage,
+                  child: Container(
+                    width: 200,
+                    height: 200,
+                    decoration: BoxDecoration(
+                      borderRadius: BorderRadius.circular(24),
+                      color: theme.colorScheme.surface,
+                      border: Border.all(
+                        color: _image != null ? primaryColor : theme.colorScheme.onSurface.withValues(alpha: 0.1),
+                        width: 2,
+                      ),
+                      boxShadow: [
+                        BoxShadow(
+                          color: Colors.black.withValues(alpha: 0.05),
+                          blurRadius: 15,
+                          offset: const Offset(0, 8),
+                        )
+                      ],
+                    ),
+                    child: _image == null
+                        ? Column(
+                            mainAxisAlignment: MainAxisAlignment.center,
+                            children: [
+                              Icon(Icons.add_photo_alternate_outlined, color: primaryColor, size: 48),
+                              const SizedBox(height: 12),
+                              Text(
+                                "Add Product Image",
+                                style: TextStyle(
+                                  color: theme.colorScheme.onSurface.withValues(alpha: 0.5),
+                                  fontSize: 12,
+                                  fontFamily: "Saira",
+                                ),
+                              ),
+                            ],
+                          )
+                        : ClipRRect(
+                            borderRadius: BorderRadius.circular(22),
+                            child: Image.file(_image!, fit: BoxFit.cover),
+                          ),
+                  ),
                 ),
-                child: const Text("UPLOAD", style: TextStyle(color: Colors.white, fontFamily: "Saira")),
+              ),
+              const SizedBox(height: 40),
+
+              CustomTextField(
+                label: "Product Name",
+                hint: "What are you crafting?",
+                controller: _namecontroller,
+              ),
+              const SizedBox(height: 24),
+
+              CustomTextField(
+                label: "Description",
+                hint: "describe your masterpiece...",
+                controller: _desccontroller,
+                maxLines: 4,
+              ),
+              const SizedBox(height: 24),
+
+              ChooseCategory(p: p),
+              const SizedBox(height: 24),
+
+              const Text(
+                "Set Price",
+                style: TextStyle(
+                  fontSize: 14,
+                  fontWeight: FontWeight.w500,
+                  fontFamily: "Saira",
+                ),
+              ),
+              const SizedBox(height: 8),
+              Center(child: NumberIndicator(p: p)),
+              const SizedBox(height: 48),
+
+              ElevatedButton(
+                onPressed: _isUploading ? null : _handleUpload,
+                style: ElevatedButton.styleFrom(
+                  minimumSize: const Size(double.infinity, 60),
+                ),
+                child: _isUploading
+                    ? SizedBox(
+                        height: 24,
+                        width: 24,
+                        child: CircularProgressIndicator(
+                          strokeWidth: 3,
+                          valueColor: AlwaysStoppedAnimation<Color>(theme.colorScheme.onPrimary),
+                        ),
+                      )
+                    : const Text(
+                        "UPLOAD PRODUCT",
+                        style: TextStyle(letterSpacing: 1.5),
+                      ),
               ),
               const SizedBox(height: 40), 
             ],
@@ -172,5 +182,39 @@ class _UploadState extends State<Upload> {
         ),
       ),
     );
+  }
+
+  Future<void> _handleUpload() async {
+    if (_key.currentState!.validate()) {
+      if (_image == null) {
+        ScaffoldMessenger.of(context).showSnackBar(
+          const SnackBar(content: Text("Please select a product image")),
+        );
+        return;
+      }
+
+      setState(() => _isUploading = true);
+      try {
+        p.title = _namecontroller.text.trim();
+        p.description = _desccontroller.text.trim();
+        p.artisanId = widget.artisan.id;
+        
+        final newProduct = await ProductsProvider().addProduct(p, _image);
+        if(newProduct != null && mounted){
+          ScaffoldMessenger.of(context).showSnackBar(
+            const SnackBar(content: Text("Product uploaded successfully!")),
+          );
+          reset();
+        }
+      } catch (e) {
+        if (mounted) {
+          ScaffoldMessenger.of(context).showSnackBar(
+            SnackBar(content: Text("Upload failed: $e")),
+          );
+        }
+      } finally {
+        if (mounted) setState(() => _isUploading = false);
+      }
+    }
   }
 }

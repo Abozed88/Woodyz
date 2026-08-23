@@ -19,6 +19,8 @@ class Products extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    final theme = Theme.of(context);
+    
     return Expanded(
       child: GridView.builder(
         controller: scrollController,
@@ -75,8 +77,16 @@ class Products extends StatelessWidget {
             borderRadius: BorderRadius.circular(8),
             child: Container(
               decoration: BoxDecoration(
-                color: Colors.grey[900],
+                color: theme.colorScheme.surface,
                 borderRadius: BorderRadius.circular(8),
+                boxShadow: theme.brightness == Brightness.light ? [
+                  BoxShadow(
+                    color: Colors.black.withOpacity(0.05),
+                    blurRadius: 8,
+                    offset: const Offset(0, 4),
+                  )
+                ] : null,
+                border: Border.all(color: theme.colorScheme.onSurface.withOpacity(0.05)),
               ),
               child: ClipRRect(
                 borderRadius: BorderRadius.circular(8),
@@ -102,30 +112,25 @@ class Products extends StatelessWidget {
                                                   loadingProgress
                                                       .expectedTotalBytes!
                                             : null,
-                                        color: const Color.fromRGBO(
-                                          252,
-                                          184,
-                                          25,
-                                          1,
-                                        ),
+                                        color: theme.colorScheme.primary,
                                       ),
                                     );
                                   },
                               errorBuilder: (context, error, stackTrace) =>
                                   Container(
-                                    color: Colors.grey[800],
-                                    child: const Icon(
+                                    color: theme.colorScheme.surface,
+                                    child: Icon(
                                       Icons.broken_image,
-                                      color: Colors.white54,
+                                      color: theme.colorScheme.onSurface.withOpacity(0.3),
                                       size: 40,
                                     ),
                                   ),
                             )
                           : Container(
-                              color: Colors.grey[800],
-                              child: const Icon(
+                              color: theme.colorScheme.surface,
+                              child: Icon(
                                 Icons.image,
-                                color: Colors.white54,
+                                color: theme.colorScheme.onSurface.withOpacity(0.3),
                                 size: 40,
                               ),
                             ),
@@ -134,8 +139,8 @@ class Products extends StatelessWidget {
                       padding: const EdgeInsets.all(8.0),
                       child: Text(
                         item.title,
-                        style: const TextStyle(
-                          color: Colors.white,
+                        style: TextStyle(
+                          color: theme.colorScheme.onSurface,
                           fontFamily: "Saira",
                           fontSize: 16,
                           fontWeight: FontWeight.bold,

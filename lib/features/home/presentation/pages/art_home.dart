@@ -32,35 +32,45 @@ class _ArthomeState extends State<Arthome> {
 
   @override
   Widget build(BuildContext context) {
+    final theme = Theme.of(context);
+    
     return Scaffold(
-      backgroundColor: Colors.black,
       appBar: AppBar(
-        backgroundColor: const Color.fromRGBO(252, 184, 25, 1),
-        title: const Text("Woodyz", style: TextStyle(color: Colors.white, fontFamily: "Western",),)
+        automaticallyImplyLeading: false,
+        title: const Text(
+          "Woodyz", 
+          style: TextStyle(
+            fontFamily: "Western",
+            fontSize: 24,
+            letterSpacing: 2,
+          ),
+        ),
       ),
       body: _screens[_selectedIndex],
       bottomNavigationBar: BottomNavigationBar(
         type: BottomNavigationBarType.fixed,
-        backgroundColor: const Color.fromRGBO(46, 46, 45, 1),
+        backgroundColor: theme.colorScheme.surface,
+        selectedItemColor: theme.colorScheme.primary,
+        unselectedItemColor: theme.colorScheme.onSurface.withOpacity(0.5),
+        currentIndex: _selectedIndex,
+        onTap: _onItemTapped,
         items: const <BottomNavigationBarItem>[
           BottomNavigationBarItem(
-            icon: Icon(Icons.store),
+            icon: Icon(Icons.store_outlined),
+            activeIcon: Icon(Icons.store),
             label: 'My Store',
           ),
           BottomNavigationBarItem(
-            icon: Icon(Icons.upload),
+            icon: Icon(Icons.add_box_outlined),
+            activeIcon: Icon(Icons.add_box),
             label: 'Upload',
           ),
           BottomNavigationBarItem(
-            icon: Icon(Icons.person),
+            icon: Icon(Icons.person_outline),
+            activeIcon: Icon(Icons.person),
             label: 'Profile',
           ),
         ],
-        currentIndex: _selectedIndex,
-        selectedItemColor: const Color.fromRGBO(252, 184, 25, 1),
-        unselectedItemColor: Colors.grey,
-        unselectedLabelStyle: const TextStyle(color: Colors.grey),
-        onTap: _onItemTapped,
       ),
     );
   }

@@ -1,52 +1,46 @@
-# Implementation Plan - Migrate Backend to Supabase (Woodyz 2.0)
+# Implementation Plan - UI Refinement & Readability Fixes
 
-This plan outlines the migration from PHP/MySQL to the user-defined Supabase 2.0 schema.
+This plan addresses the color contrast issues in Light Mode and ensures the "Always Dark" requirement for onboarding is correctly implemented without breaking readability.
 
 ## User Review Required
 
 > [!IMPORTANT]
-> The `profiles` table now acts as the central user store. I will merge `Customer` and `Artisan` data into this single table structure.
-> All IDs (User and Product) will be updated to match the PostgreSQL types (`uuid` and `bigint`).
+> - **Onboarding Flow** (Login/Signup/Step 2): Will remain **Always Dark** with a dedicated dark background to avoid "white on white" issues.
+> - **Main Tabs** (Home/Explore/Saved/Profile/Upload): Will follow the **System Theme** (Light/Dark) but with all hardcoded colors removed to ensure perfect readability.
 
 ## Proposed Changes
 
-### 1. Data Models Refactoring
+### 1. Consistent "Always Dark" Onboarding
 
-#### [MODIFY] [auth_entities.dart](file:///C:/Users/Grandiose/Documents/Woodyz/lib/features/auth/domain/entities/auth_entities.dart)
-- Update `User.id` to `String` (for UUID).
-- Add `username` and `bio` fields.
-- Map `avatar_url` to existing image fields.
-- Keep `Customer` and `Artisan` as subclasses for role-specific UI logic, but ensure they serialize to the single `profiles` table.
+I will ensure these pages have a dark background even if the device is in light mode:
+- `lib/features/auth/presentation/pages/login.dart`
+- `lib/features/auth/presentation/pages/signup.dart`
+- `lib/features/auth/presentation/pages/signup_cust.dart`
+- `lib/features/auth/presentation/pages/artisan/signup_art.dart`
 
-#### [MODIFY] [product_entity.dart](file:///C:/Users/Grandiose/Documents/Woodyz/lib/features/products/domain/entities/product_entity.dart)
-- Update `artid` to `String` (UUID).
-- Update `pid` to `int` (BigInt in JS is `int` in Dart/Flutter).
-- Rename internal fields if necessary to match `title` (table) vs `name` (code), or update code to use `title`. I'll stick to `title` to match the DB.
-- Add `isAvailable` and `material` fields.
+### 2. Tab-specific Readability Fixes (System Theme)
 
-### 2. Provider Migration
+#### [MODIFY] [profile.dart](file:///C:/Users/Grandiose/Documents/Woodyz/lib/features/auth/presentation/pages/profile.dart)
+- Remove the `AppTheme.darkTheme` override to allow it to follow the system theme.
+- Replace hardcoded `Colors.white` and `Color.fromRGBO(...)` with `theme.colorScheme` properties.
+- Fix the Settings icon color.
 
-#### [MODIFY] [auth_provider.dart](file:///C:/Users/Grandiose/Documents/Woodyz/lib/features/auth/presentation/providers/auth_provider.dart)
-- **Sign Up**: Use `supabase.auth.signUp`. On success, insert into the `profiles` table.
-- **Login**: Use `supabase.auth.signInWithPassword`. Fetch profile data from the `profiles` table upon successful auth.
-- **Avatar Upload**: Use the `avatars` bucket.
+#### [MODIFY] [upload.dart](file:///C:/Users/Grandiose/Documents/Woodyz/lib/features/auth/presentation/pages/artisan/upload.dart)
+- Remove hardcoded white text and primary color RGBO calls.
+- Ensure the background and text adapt correctly to the theme.
 
-#### [MODIFY] [products_provider.dart](file:///C:/Users/Grandiose/Documents/Woodyz/lib/features/products/presentation/providers/products_provider.dart)
-- **Fetch Products**: Query the `products` table, joining `product_images` to get the primary image.
-- **Add Product**:
-    1. Insert into `products` table.
-    2. Upload image(s) to `product-images` bucket.
-    3. Insert image records into `product_images` table.
-- **Favorites**: Update `saveProduct` and `unsaveProduct` to use the `favorites` table.
+#### [MODIFY] [profile_widgets.dart](file:///C:/Users/Grandiose/Documents/Woodyz/lib/features/auth/presentation/widgets/profile_widgets.dart) & [upload_widgets.dart](file:///C:/Users/Grandiose/Documents/Woodyz/lib/features/auth/presentation/widgets/upload_widgets.dart)
+- Update `PImage`, `Preferences`, `ChooseCategory`, and `NumberIndicator` to be fully theme-aware.
+- Ensure `NumberIndicator` text is visible in Light mode.
 
-### 3. UI Updates
-- Update all screens to handle `String` IDs for users.
-- Ensure `username` is used where appropriate (e.g., login or profile display).
+### 3. Navigation Cleanup
+
+- Verify and ensure `automaticallyImplyLeading: false` is set on all top-level Home/Artisan Home screens to remove the unintentional back button.
 
 ## Verification Plan
 
 ### Manual Verification
-1. **Sign Up**: Register as an Artisan/Customer, verify the entry in `auth.users` and `public.profiles`.
-2. **Product Upload**: Upload a product with an image, verify storage in `product-images` and records in `products`/`product_images`.
-3. **Feed**: Verify the homescreen displays products from the `products` table.
-4. **Favorites**: Toggle a favorite and verify the record in `favorites`.
+1. **Light Mode Check**: Toggle device to Light Mode.
+   - Verify `Home`, `Explore`, `Saved`, `Profile`, and `Upload` tabs have dark text on a light background.
+   - Verify `Login` and `Signup` remain dark with white text.
+2. **Navigation**: Ensure no back button appears in the main app bar of the home screens.

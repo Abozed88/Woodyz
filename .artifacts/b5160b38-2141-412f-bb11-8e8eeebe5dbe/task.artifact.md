@@ -1,18 +1,18 @@
-# Task - Supabase Migration (Woodyz 2.0)
+# Task - UI Refinement & Navigation Fixes
 
-- [ ] Update Data Models
-    - [ ] Refactor `User`, `Customer`, `Artisan` to match `profiles` table
-    - [ ] Refactor `Product` to match `products` and `product_images` tables
-- [ ] Implement Supabase Auth
-    - [ ] Update `AuthProvider.login` to use Supabase Auth
-    - [ ] Update `AuthProvider.signup` (Artisan & Customer) to use Supabase Auth + Profiles insert
-    - [ ] Implement session persistence using Supabase's built-in listener
-- [ ] Implement Supabase Data Fetching
-    - [ ] Update `ProductsProvider.fetchData` for product feed
-    - [ ] Update `ProductsProvider.addProduct` with image upload to `product-images` bucket
-    - [ ] Update `ProductsProvider.fetchArtisanData`
-    - [ ] Update `ProductsProvider.saveProduct` / `unsaveProduct` using `favorites` table
-- [ ] UI Integration & Cleanup
-    - [ ] Update screens to handle UUIDs (String)
-    - [ ] Remove legacy `http` calls and PHP URL constants
-    - [ ] Verify functionality
+- [ ] Force Dark Mode for Auth Flow
+    - [ ] Update `login.dart`
+    - [ ] Update `signup.dart`
+    - [ ] Update `signup_cust.dart`
+    - [ ] Update `signup_art.dart`
+- [ ] Fix Color Contrast in Home Tabs
+    - [ ] Update `explore.dart` (Categories header)
+    - [ ] Update `homescreen.dart` (Empty state text)
+    - [ ] Update `saved.dart` (Empty state text)
+    - [ ] Update `explore_widgets.dart` (`SearchCont` and `Categories`)
+- [ ] Fix Navigation
+    - [ ] Remove back button in `art_home.dart`
+    - [ ] Remove back button in `cust_home.dart`
+- [ ] Verify
+    - [ ] Test Light Mode readability
+    - [ ] Test Navigation
