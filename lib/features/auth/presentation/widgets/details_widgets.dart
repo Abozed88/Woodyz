@@ -9,26 +9,54 @@ class Widget1 extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    return Row(
-      mainAxisAlignment: MainAxisAlignment.spaceBetween,
+    return Column(
       children: [
-        _buildInfoBox(
-          context,
-          label: "Stock Quantity",
-          value: p.stock.toString(),
-          icon: Icons.inventory_2_outlined,
+        Row(
+          mainAxisAlignment: MainAxisAlignment.spaceBetween,
+          children: [
+            _buildInfoBox(
+              context,
+              label: "Stock Quantity",
+              value: p.stock.toString(),
+              icon: Icons.inventory_2_outlined,
+            ),
+            _buildInfoBox(
+              context,
+              label: "Material",
+              value: p.material ?? "Wood",
+              icon: Icons.category_outlined,
+            ),
+          ],
         ),
-        _buildInfoBox(
-          context,
-          label: "Uploaded At",
-          value: p.createdAt?.substring(0, 10) ?? "N/A",
-          icon: Icons.calendar_today_outlined,
+        const SizedBox(height: 16),
+        Row(
+          mainAxisAlignment: MainAxisAlignment.spaceBetween,
+          children: [
+            _buildInfoBox(
+              context,
+              label: "Availability",
+              value: p.isAvailable ? "In Stock" : "Sold Out",
+              icon: p.isAvailable ? Icons.check_circle_outline : Icons.highlight_off_outlined,
+              valueColor: p.isAvailable ? Colors.green : Colors.red,
+            ),
+            _buildInfoBox(
+              context,
+              label: "Listed On",
+              value: p.createdAt?.substring(0, 10) ?? "N/A",
+              icon: Icons.calendar_today_outlined,
+            ),
+          ],
         ),
       ],
     );
   }
 
-  Widget _buildInfoBox(BuildContext context, {required String label, required String value, required IconData icon}) {
+  Widget _buildInfoBox(BuildContext context, {
+    required String label, 
+    required String value, 
+    required IconData icon,
+    Color? valueColor,
+  }) {
     final theme = Theme.of(context);
     final primaryColor = theme.colorScheme.primary;
 
@@ -38,27 +66,28 @@ class Widget1 extends StatelessWidget {
       decoration: BoxDecoration(
         color: theme.colorScheme.surface,
         borderRadius: BorderRadius.circular(16),
-        border: Border.all(color: theme.colorScheme.onSurface.withOpacity(0.05)),
+        border: Border.all(color: theme.colorScheme.onSurface.withValues(alpha: 0.05)),
       ),
       child: Column(
         children: [
-          Icon(icon, color: primaryColor, size: 32),
+          Icon(icon, color: primaryColor, size: 28),
           const SizedBox(height: 12),
           Text(
             label,
             style: TextStyle(
-              color: theme.colorScheme.onSurface.withOpacity(0.5),
-              fontSize: 12,
+              color: theme.colorScheme.onSurface.withValues(alpha: 0.5),
+              fontSize: 11,
               fontFamily: "Saira",
             ),
           ),
           const SizedBox(height: 4),
           Text(
             value,
-            style: const TextStyle(
-              fontSize: 16,
+            style: TextStyle(
+              fontSize: 15,
               fontWeight: FontWeight.bold,
               fontFamily: "Saira",
+              color: valueColor ?? theme.colorScheme.onSurface,
             ),
           ),
         ],
@@ -84,7 +113,7 @@ class Widget2 extends StatelessWidget {
           : const Color(0xFFFBFBFB),
       shape: RoundedRectangleBorder(
         borderRadius: BorderRadius.circular(16),
-        side: BorderSide(color: theme.colorScheme.onSurface.withOpacity(0.1)),
+        side: BorderSide(color: theme.colorScheme.onSurface.withValues(alpha: 0.1)),
       ),
       child: InkWell(
         onTap: () async {
@@ -141,12 +170,12 @@ class Widget2 extends StatelessWidget {
                     ),
                     Row(
                       children: [
-                        Icon(Icons.location_on_outlined, size: 14, color: theme.colorScheme.onSurface.withOpacity(0.5)),
+                        Icon(Icons.location_on_outlined, size: 14, color: theme.colorScheme.onSurface.withValues(alpha: 0.5)),
                         const SizedBox(width: 4),
                         Text(
                           artisan.location,
                           style: TextStyle(
-                            color: theme.colorScheme.onSurface.withOpacity(0.5),
+                            color: theme.colorScheme.onSurface.withValues(alpha: 0.5),
                             fontSize: 13,
                             fontFamily: "Saira",
                           ),
@@ -156,7 +185,7 @@ class Widget2 extends StatelessWidget {
                   ],
                 ),
               ),
-              Icon(Icons.arrow_forward_ios, size: 16, color: theme.colorScheme.onSurface.withOpacity(0.3)),
+              Icon(Icons.arrow_forward_ios, size: 16, color: theme.colorScheme.onSurface.withValues(alpha: 0.3)),
             ],
           ),
         ),

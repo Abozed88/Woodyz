@@ -20,16 +20,17 @@ class Products extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     final theme = Theme.of(context);
+    final isLight = theme.brightness == Brightness.light;
     
     return Expanded(
       child: GridView.builder(
         controller: scrollController,
-        padding: const EdgeInsets.all(10),
+        padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 10),
         gridDelegate: const SliverGridDelegateWithMaxCrossAxisExtent(
           maxCrossAxisExtent: 250,
-          crossAxisSpacing: 10,
-          mainAxisSpacing: 10,
-          childAspectRatio: 0.8,
+          crossAxisSpacing: 16,
+          mainAxisSpacing: 16,
+          childAspectRatio: 0.75, // Adjusted for better label fitting
         ),
         itemCount: items.length,
         itemBuilder: (context, index) {
@@ -74,26 +75,42 @@ class Products extends StatelessWidget {
                 }
               }
             },
-            borderRadius: BorderRadius.circular(8),
+            borderRadius: BorderRadius.circular(16),
             child: Container(
               decoration: BoxDecoration(
                 color: theme.colorScheme.surface,
-                borderRadius: BorderRadius.circular(8),
-                boxShadow: theme.brightness == Brightness.light ? [
+                borderRadius: BorderRadius.circular(16),
+                boxShadow: isLight ? [
                   BoxShadow(
-                    color: Colors.black.withOpacity(0.05),
+                    color: Colors.black.withValues(alpha: 0.04),
+                    blurRadius: 12,
+                    offset: const Offset(0, 4),
+                  ),
+                  BoxShadow(
+                    color: Colors.black.withValues(alpha: 0.02),
+                    blurRadius: 2,
+                    offset: const Offset(0, 1),
+                  ),
+                ] : [
+                  BoxShadow(
+                    color: Colors.black.withValues(alpha: 0.2),
                     blurRadius: 8,
                     offset: const Offset(0, 4),
                   )
-                ] : null,
-                border: Border.all(color: theme.colorScheme.onSurface.withOpacity(0.05)),
+                ],
+                border: Border.all(
+                  color: isLight 
+                    ? theme.colorScheme.onSurface.withValues(alpha: 0.08)
+                    : theme.colorScheme.onSurface.withValues(alpha: 0.05),
+                ),
               ),
               child: ClipRRect(
-                borderRadius: BorderRadius.circular(8),
+                borderRadius: BorderRadius.circular(16),
                 child: Column(
                   crossAxisAlignment: CrossAxisAlignment.stretch,
                   children: [
-                    Expanded(
+                    AspectRatio(
+                      aspectRatio: 1, // Keep images square in the grid
                       child: item.imageUrl != null
                           ? Image.network(
                               item.imageUrl!,
@@ -103,6 +120,7 @@ class Products extends StatelessWidget {
                                     if (loadingProgress == null) return child;
                                     return Center(
                                       child: CircularProgressIndicator(
+                                        strokeWidth: 2,
                                         value:
                                             loadingProgress
                                                     .expectedTotalBytes !=
@@ -120,34 +138,52 @@ class Products extends StatelessWidget {
                                   Container(
                                     color: theme.colorScheme.surface,
                                     child: Icon(
-                                      Icons.broken_image,
-                                      color: theme.colorScheme.onSurface.withOpacity(0.3),
-                                      size: 40,
+                                      Icons.broken_image_outlined,
+                                      color: theme.colorScheme.onSurface.withValues(alpha: 0.2),
+                                      size: 32,
                                     ),
                                   ),
                             )
                           : Container(
                               color: theme.colorScheme.surface,
                               child: Icon(
-                                Icons.image,
-                                color: theme.colorScheme.onSurface.withOpacity(0.3),
-                                size: 40,
+                                Icons.image_outlined,
+                                color: theme.colorScheme.onSurface.withValues(alpha: 0.2),
+                                size: 32,
                               ),
                             ),
                     ),
-                    Padding(
-                      padding: const EdgeInsets.all(8.0),
-                      child: Text(
-                        item.title,
-                        style: TextStyle(
-                          color: theme.colorScheme.onSurface,
-                          fontFamily: "Saira",
-                          fontSize: 16,
-                          fontWeight: FontWeight.bold,
+                    Expanded(
+                      child: Padding(
+                        padding: const EdgeInsets.all(12.0),
+                        child: Column(
+                          mainAxisAlignment: MainAxisAlignment.center,
+                          children: [
+                            Text(
+                              item.title,
+                              style: TextStyle(
+                                color: theme.colorScheme.onSurface,
+                                fontFamily: "Saira",
+                                fontSize: 14,
+                                fontWeight: FontWeight.bold,
+                                height: 1.2,
+                              ),
+                              textAlign: TextAlign.center,
+                              maxLines: 2,
+                              overflow: TextOverflow.ellipsis,
+                            ),
+                            const SizedBox(height: 4),
+                            Text(
+                              "\$${item.price.toStringAsFixed(2)}",
+                              style: TextStyle(
+                                color: theme.colorScheme.primary,
+                                fontWeight: FontWeight.bold,
+                                fontSize: 12,
+                                fontFamily: "Saira",
+                              ),
+                            ),
+                          ],
                         ),
-                        textAlign: TextAlign.center,
-                        maxLines: 2,
-                        overflow: TextOverflow.ellipsis,
                       ),
                     ),
                   ],

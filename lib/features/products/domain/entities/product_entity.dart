@@ -10,6 +10,7 @@ class Product {
   bool isAvailable;
   String? imageUrl; // Primary image URL
   String? createdAt;
+  String? updatedAt;
 
   Product({
     this.id,
@@ -23,6 +24,7 @@ class Product {
     this.isAvailable = true,
     this.imageUrl,
     this.createdAt,
+    this.updatedAt,
   });
 
   Product.init()
@@ -53,6 +55,7 @@ class Product {
       isAvailable: json['is_available'] ?? true,
       imageUrl: json['image_url'] ?? primaryImg,
       createdAt: json['created_at'],
+      updatedAt: json['updated_at'],
     );
   }
 

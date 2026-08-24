@@ -1,32 +1,27 @@
-# Walkthrough - UI & Readability Refinements
+# Walkthrough - Image & Container UI Refinements
 
-I have refined the app's theming to ensure a premium look for authentication while providing a highly readable, system-adaptive experience for the main features.
+I have refined the image rendering logic and improved the product card aesthetics to ensure a consistent, non-deformed, and polished look across all device modes.
 
 ## Changes Made
 
-### 1. "Always Dark" Onboarding
-- **Identity Preservation**: Wrapped `Login`, `Signup`, `SignupCust`, and `SignupArt` in a forced Dark Theme. This ensures the brand's premium dark aesthetic is maintained during the first user interactions, regardless of system settings.
-- **Visual Depth**: Improved the backgrounds and overlays on these pages to prevent any "light flash" or readability issues if the device is in Light Mode.
+### 1. Fixed Image Deformity
+- **Details Page**: Replaced fixed height constraints with an `AspectRatio(aspectRatio: 4 / 3)` wrapper. This ensures the product image maintains a natural landscape ratio and never stretches or squashes, regardless of the device's screen size.
+- **Home Grid**: Implemented `AspectRatio(aspectRatio: 1)` (square) for images in the product grid. This provides a clean, uniform "catalog" look while preserving the internal proportions of your craft photos.
 
-### 2. Tab Readability (Light Mode)
-- **Profile & Upload**: Refactored these tabs to fully support the system theme.
-    - Replaced hardcoded white text with `theme.colorScheme.onSurface`.
-    - Updated icons and dividers to adapt their contrast dynamically.
-    - Fixed the `Profile` tab to follow system settings while keeping the same data structure.
-- **Product Containers**: Updated the product cards on the Home screen to use `theme.colorScheme.surface`. In Light Mode, they now have subtle shadows and dark text, making them perfectly readable against the light background.
+### 2. Improved Product Containers (Light Mode)
+- **Visual Depth**: Overhauled the `BoxShadow` for product cards in Light Mode. They now feature a subtle, multi-layered shadow that makes them "pop" against the light background without looking harsh.
+- **Border Refinement**: Added a very subtle border (`onSurface` with 8% opacity) that defines the card boundaries more clearly in Light Mode.
+- **Card Layout**: Adjusted the `childAspectRatio` and padding in the grid to provide more breathing room for product titles and prices.
 
-### 3. Navigation & UX
-- **No Backwards Navigation**: Added `automaticallyImplyLeading: false` to the AppBars of `Home` and `Artisan Home`. This removes the unintentional back button to the Login screen.
-- **Polished Widgets**:
-    - `ChooseCategory` and `NumberIndicator` now use theme-aware colors for text and icons.
-    - Updated the "Log Out" dialog to match the current theme context.
+### 3. Polish & Consistency
+- **Placeholder Improvements**: Updated the "Broken Image" and "No Image" placeholders to match the theme's surface colors and icons.
+- **Rating Container**: Added a subtle border to the rating badge in the details page to maintain consistent styling with other UI elements.
 
 ## Verification Results
 
-### Theme Test
-- **Light Mode**: Text is dark gray/black, cards are white with subtle borders/shadows. No white-on-white text found.
-- **Dark Mode**: Original premium aesthetic is preserved.
-- **Onboarding**: Registration and Login remain dark even when the system is set to light.
+### UI Quality Check
+- **No Stretching**: Confirmed that images now occupy a fixed aspect ratio space, preventing any deformity.
+- **Readability**: In Light Mode, the card background (`surface`) and text (`onSurface`) have high contrast for perfect legibility.
 
 > [!TIP]
-> The app now intelligently switches between a brand-focused dark onboarding and a user-focused adaptive main interface.
+> Using `AspectRatio` is the best practice in Flutter to handle diverse image sources (like user uploads) while maintaining a high-quality, professional layout.

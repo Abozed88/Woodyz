@@ -98,11 +98,10 @@ class _LoginState extends State<Login> {
                       child: Column(
                         mainAxisAlignment: MainAxisAlignment.center,
                         children: [
-                          // Header Logo
                           const Text(
                             "WOODYZ",
                             style: TextStyle(
-                              fontSize: 48,
+                              fontSize: 30,
                               color: Colors.white,
                               fontFamily: "Western",
                               letterSpacing: 4,

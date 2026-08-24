@@ -39,7 +39,7 @@ class _DetailsState extends State<Details> {
   Widget build(BuildContext context) {
     final theme = Theme.of(context);
     final primaryColor = theme.colorScheme.primary;
-
+    
     return Scaffold(
       appBar: AppBar(
         leading: IconButton(
@@ -117,47 +117,90 @@ class _DetailsState extends State<Details> {
                 child: Column(
                     crossAxisAlignment: CrossAxisAlignment.start,
                     children: [
-                      // Product Image
+                      // Product Image with AspectRatio to prevent deformity
                       ClipRRect(
-                        borderRadius: BorderRadius.circular(20),
-                        child: widget.p.imageUrl != null
-                          ? Image.network(
-                              widget.p.imageUrl!,
-                              width: double.infinity,
-                              height: 400,
-                              fit: BoxFit.cover,
-                              errorBuilder: (context, error, stackTrace) => Container(
-                                height: 400,
-                                color: theme.colorScheme.surface,
-                                child: const Icon(Icons.broken_image, size: 64, color: Colors.white24),
-                              ),
-                            )
-                          : Container(
-                              height: 400,
-                              color: theme.colorScheme.surface,
-                              child: const Icon(Icons.image, size: 64, color: Colors.white24),
-                            ),
+                        borderRadius: BorderRadius.circular(24),
+                        child: Container(
+                          color: theme.colorScheme.surface,
+                          child: AspectRatio(
+                            aspectRatio: 4 / 3, // Natural landscape ratio for products
+                            child: widget.p.imageUrl != null
+                              ? Image.network(
+                                  widget.p.imageUrl!,
+                                  width: double.infinity,
+                                  fit: BoxFit.cover,
+                                  loadingBuilder: (context, child, loadingProgress) {
+                                    if (loadingProgress == null) return child;
+                                    return Center(
+                                      child: CircularProgressIndicator(
+                                        value: loadingProgress.expectedTotalBytes != null
+                                            ? loadingProgress.cumulativeBytesLoaded / loadingProgress.expectedTotalBytes!
+                                            : null,
+                                        color: primaryColor,
+                                      ),
+                                    );
+                                  },
+                                  errorBuilder: (context, error, stackTrace) => Container(
+                                    color: theme.colorScheme.surface,
+                                    child: Icon(Icons.broken_image_outlined, size: 64, color: theme.colorScheme.onSurface.withValues(alpha: 0.1)),
+                                  ),
+                                )
+                              : Container(
+                                  color: theme.colorScheme.surface,
+                                  child: Icon(Icons.image_outlined, size: 64, color: theme.colorScheme.onSurface.withValues(alpha: 0.1)),
+                                ),
+                          ),
+                        ),
                       ),
                       const SizedBox(height: 24),
 
-                      // Category Chip
-                      Container(
-                        padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 6),
-                        decoration: BoxDecoration(
-                          color: primaryColor.withOpacity(0.1),
-                          borderRadius: BorderRadius.circular(20),
-                          border: Border.all(color: primaryColor.withOpacity(0.3)),
-                        ),
-                        child: Text(
-                          widget.p.category.toUpperCase(),
-                          style: TextStyle(
-                            color: primaryColor,
-                            fontFamily: "Saira",
-                            fontSize: 10,
-                            fontWeight: FontWeight.bold,
-                            letterSpacing: 1,
+                      // Category & Availability Row
+                      Row(
+                        mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                        children: [
+                          Container(
+                            padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 6),
+                            decoration: BoxDecoration(
+                              color: primaryColor.withValues(alpha: 0.1),
+                              borderRadius: BorderRadius.circular(20),
+                              border: Border.all(color: primaryColor.withValues(alpha: 0.3)),
+                            ),
+                            child: Text(
+                              widget.p.category.toUpperCase(),
+                              style: TextStyle(
+                                color: primaryColor,
+                                fontFamily: "Saira",
+                                fontSize: 10,
+                                fontWeight: FontWeight.bold,
+                                letterSpacing: 1,
+                              ),
+                            ),
                           ),
-                        ),
+                          Container(
+                            padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 6),
+                            decoration: BoxDecoration(
+                              color: (widget.p.isAvailable && widget.p.stock > 0) 
+                                  ? Colors.green.withValues(alpha: 0.1) 
+                                  : Colors.red.withValues(alpha: 0.1),
+                              borderRadius: BorderRadius.circular(20),
+                              border: Border.all(
+                                color: (widget.p.isAvailable && widget.p.stock > 0) 
+                                    ? Colors.green.withValues(alpha: 0.3) 
+                                    : Colors.red.withValues(alpha: 0.3)
+                              ),
+                            ),
+                            child: Text(
+                              (widget.p.isAvailable && widget.p.stock > 0) ? "AVAILABLE" : "SOLD OUT",
+                              style: TextStyle(
+                                color: (widget.p.isAvailable && widget.p.stock > 0) ? Colors.green : Colors.red,
+                                fontFamily: "Saira",
+                                fontSize: 10,
+                                fontWeight: FontWeight.bold,
+                                letterSpacing: 1,
+                              ),
+                            ),
+                          ),
+                        ],
                       ),
                       const SizedBox(height: 12),
 
@@ -181,6 +224,7 @@ class _DetailsState extends State<Details> {
                             decoration: BoxDecoration(
                               color: theme.colorScheme.surface,
                               borderRadius: BorderRadius.circular(12),
+                              border: Border.all(color: theme.colorScheme.onSurface.withValues(alpha: 0.05)),
                             ),
                             child: Row(
                               children: [
@@ -209,7 +253,16 @@ class _DetailsState extends State<Details> {
                       const Divider(thickness: 1),
                       const SizedBox(height: 24),
 
-                      // Info Widgets
+                      // Specifications Grid
+                      const Text(
+                        "Specifications",
+                        style: TextStyle(
+                          fontSize: 20, 
+                          fontWeight: FontWeight.bold,
+                          fontFamily: "Saira",
+                        ),
+                      ),
+                      const SizedBox(height: 16),
                       Widget1(p: widget.p),
                       const SizedBox(height: 32),
 
@@ -225,7 +278,7 @@ class _DetailsState extends State<Details> {
                       Text(
                         widget.p.description,
                         style: TextStyle(
-                          color: theme.colorScheme.onSurface.withOpacity(0.6),
+                          color: theme.colorScheme.onSurface.withValues(alpha: 0.6),
                           fontSize: 16,
                           height: 1.5,
                           fontFamily: "Saira",
@@ -245,6 +298,23 @@ class _DetailsState extends State<Details> {
                       const SizedBox(height: 16),
                       Widget2(artisan: widget.a),
                       const SizedBox(height: 40),
+
+
+
+                      // Timestamps
+                      if (widget.p.updatedAt != null) ...[
+                        Center(
+                          child: Text(
+                            "Last updated: ${widget.p.updatedAt!.substring(0, 10)}",
+                            style: TextStyle(
+                              color: theme.colorScheme.onSurface.withValues(alpha: 0.3),
+                              fontSize: 12,
+                              fontFamily: "Saira",
+                            ),
+                          ),
+                        ),
+                        const SizedBox(height: 24),
+                      ],
 
                       // Order Button
                       ElevatedButton(

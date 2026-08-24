@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:woodyz/features/auth/presentation/widgets/profile_widgets.dart';
 import 'package:woodyz/features/auth/presentation/providers/auth_provider.dart';
+import 'package:woodyz/features/auth/presentation/pages/settings.dart';
 
 class Profile extends StatefulWidget {
   final Customer? c;
@@ -29,14 +30,6 @@ class _ProfileState extends State<Profile> {
     
     return Stack(
       children: [
-        Positioned(
-          top: 10,
-          right: 10,
-          child: IconButton(
-            onPressed: (){}, 
-            icon: Icon(Icons.settings, color: theme.colorScheme.onSurface),
-          ),
-        ),
         SingleChildScrollView(
           child: Column(
             children: [
@@ -113,7 +106,20 @@ class _ProfileState extends State<Profile> {
               const Preferences()
             ],
           ),
-        )
+        ),
+        Positioned(
+          top: 10,
+          right: 10,
+          child: IconButton(
+            onPressed: () {
+              Navigator.push(
+                context,
+                MaterialPageRoute(builder: (context) => const SettingsPage()),
+              );
+            }, 
+            icon: Icon(Icons.settings, color: theme.colorScheme.onSurface),
+          ),
+        ),
       ],
     );
   }

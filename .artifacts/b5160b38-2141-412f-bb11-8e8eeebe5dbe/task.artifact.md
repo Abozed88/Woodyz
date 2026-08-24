@@ -1,18 +1,14 @@
-# Task - UI Refinement & Navigation Fixes
+# Task - Detailed Product View
 
-- [ ] Force Dark Mode for Auth Flow
-    - [ ] Update `login.dart`
-    - [ ] Update `signup.dart`
-    - [ ] Update `signup_cust.dart`
-    - [ ] Update `signup_art.dart`
-- [ ] Fix Color Contrast in Home Tabs
-    - [ ] Update `explore.dart` (Categories header)
-    - [ ] Update `homescreen.dart` (Empty state text)
-    - [ ] Update `saved.dart` (Empty state text)
-    - [ ] Update `explore_widgets.dart` (`SearchCont` and `Categories`)
-- [ ] Fix Navigation
-    - [ ] Remove back button in `art_home.dart`
-    - [ ] Remove back button in `cust_home.dart`
-- [ ] Verify
-    - [ ] Test Light Mode readability
-    - [ ] Test Navigation
+- [ ] Enhance Data Model
+    - [ ] Add `updatedAt` to `Product` in `product_entity.dart`
+    - [ ] Update `Product.fromJson` and `Product.toJson`
+- [ ] Refactor Product Details Page
+    - [ ] Update `details.dart` to include new fields and sections
+    - [ ] Add Availability Badge
+    - [ ] Add Timestamps section
+- [ ] Update Product Details Widgets
+    - [ ] Refactor `Widget1` in `details_widgets.dart` to a grid showing Material, Stock, and more.
+- [ ] Verification
+    - [ ] Verify data mapping
+    - [ ] Check UI consistency in Light/Dark modes

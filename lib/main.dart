@@ -1,7 +1,9 @@
 import 'package:flutter/material.dart';
+import 'package:provider/provider.dart';
 import 'package:woodyz/config/env.dart';
 import 'package:supabase_flutter/supabase_flutter.dart';
 import 'package:woodyz/app.dart';
+import 'package:woodyz/core/theme/theme_provider.dart';
 
 void main() async {
   WidgetsFlutterBinding.ensureInitialized();
@@ -11,5 +13,10 @@ void main() async {
     publishableKey: Secrets.supabase_anon_key,
   );
 
-  runApp(const MyApp());
+  runApp(
+    ChangeNotifierProvider(
+      create: (_) => ThemeProvider(),
+      child: const MyApp(),
+    ),
+  );
 }

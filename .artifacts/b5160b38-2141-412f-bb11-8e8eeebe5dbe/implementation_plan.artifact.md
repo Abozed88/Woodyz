@@ -1,46 +1,37 @@
-# Implementation Plan - UI Refinement & Readability Fixes
+# Implementation Plan - Detailed Product View
 
-This plan addresses the color contrast issues in Light Mode and ensures the "Always Dark" requirement for onboarding is correctly implemented without breaking readability.
+This plan outlines the updates to the Product Details page to include all attributes from the database schema, improving transparency and information depth for users.
 
 ## User Review Required
 
-> [!IMPORTANT]
-> - **Onboarding Flow** (Login/Signup/Step 2): Will remain **Always Dark** with a dedicated dark background to avoid "white on white" issues.
-> - **Main Tabs** (Home/Explore/Saved/Profile/Upload): Will follow the **System Theme** (Light/Dark) but with all hardcoded colors removed to ensure perfect readability.
+> [!NOTE]
+> I will be updating the `Product` model to include the `updated_at` field and ensuring that "Material" and "Availability" are clearly visible.
 
 ## Proposed Changes
 
-### 1. Consistent "Always Dark" Onboarding
+### 1. Data Model Enhancement
 
-I will ensure these pages have a dark background even if the device is in light mode:
-- `lib/features/auth/presentation/pages/login.dart`
-- `lib/features/auth/presentation/pages/signup.dart`
-- `lib/features/auth/presentation/pages/signup_cust.dart`
-- `lib/features/auth/presentation/pages/artisan/signup_art.dart`
+#### [MODIFY] [product_entity.dart](file:///C:/Users/Grandiose/Documents/Woodyz/lib/features/products/domain/entities/product_entity.dart)
+- Add `updatedAt` field.
+- Update `fromJson` to map `updated_at` from Supabase.
 
-### 2. Tab-specific Readability Fixes (System Theme)
+### 2. UI Refactoring
 
-#### [MODIFY] [profile.dart](file:///C:/Users/Grandiose/Documents/Woodyz/lib/features/auth/presentation/pages/profile.dart)
-- Remove the `AppTheme.darkTheme` override to allow it to follow the system theme.
-- Replace hardcoded `Colors.white` and `Color.fromRGBO(...)` with `theme.colorScheme` properties.
-- Fix the Settings icon color.
+#### [MODIFY] [details.dart](file:///C:/Users/Grandiose/Documents/Woodyz/lib/features/auth/presentation/pages/details.dart)
+- Add an "Availability" badge next to the title or category.
+- Add a "Specifications" section for the `material`.
+- Improve the layout to include all timestamps (`created_at`, `updated_at`) at the bottom.
 
-#### [MODIFY] [upload.dart](file:///C:/Users/Grandiose/Documents/Woodyz/lib/features/auth/presentation/pages/artisan/upload.dart)
-- Remove hardcoded white text and primary color RGBO calls.
-- Ensure the background and text adapt correctly to the theme.
-
-#### [MODIFY] [profile_widgets.dart](file:///C:/Users/Grandiose/Documents/Woodyz/lib/features/auth/presentation/widgets/profile_widgets.dart) & [upload_widgets.dart](file:///C:/Users/Grandiose/Documents/Woodyz/lib/features/auth/presentation/widgets/upload_widgets.dart)
-- Update `PImage`, `Preferences`, `ChooseCategory`, and `NumberIndicator` to be fully theme-aware.
-- Ensure `NumberIndicator` text is visible in Light mode.
-
-### 3. Navigation Cleanup
-
-- Verify and ensure `automaticallyImplyLeading: false` is set on all top-level Home/Artisan Home screens to remove the unintentional back button.
+#### [MODIFY] [details_widgets.dart](file:///C:/Users/Grandiose/Documents/Woodyz/lib/features/auth/presentation/widgets/details_widgets.dart)
+- Update `Widget1` (renaming it to `ProductSpecsGrid` for clarity) to display a grid of key attributes:
+    - **Stock**
+    - **Material**
+    - **Created**
+    - **Updated**
 
 ## Verification Plan
 
 ### Manual Verification
-1. **Light Mode Check**: Toggle device to Light Mode.
-   - Verify `Home`, `Explore`, `Saved`, `Profile`, and `Upload` tabs have dark text on a light background.
-   - Verify `Login` and `Signup` remain dark with white text.
-2. **Navigation**: Ensure no back button appears in the main app bar of the home screens.
+1. **Product View**: Open a product and verify that Material, Stock, and both timestamps are visible and correctly formatted.
+2. **Theme Consistency**: Ensure the new fields are readable in both Light and Dark modes.
+3. **Null Safety**: Verify that if `material` or `updated_at` is null, the app handles it gracefully (showing "N/A" or "Not specified").
