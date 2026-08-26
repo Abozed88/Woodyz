@@ -67,11 +67,6 @@ class SettingsPage extends StatelessWidget {
           _buildSectionHeader(context, "Account"),
           _buildSettingTile(
             context,
-            icon: Icons.person_outline,
-            title: "Edit Profile",
-          ),
-          _buildSettingTile(
-            context,
             icon: Icons.lock_outline,
             title: "Privacy & Security",
           ),

@@ -6,6 +6,8 @@ class User {
   String role;
   String? phone;
   String location;
+  String? address;
+  String? bio;
 
   User({
     this.id = '',
@@ -15,6 +17,8 @@ class User {
     required this.role,
     this.phone,
     required this.location,
+    this.address,
+    this.bio,
   });
 
   factory User.fromJson(Map<String, dynamic> json) {
@@ -26,6 +30,8 @@ class User {
       role: json['role'] ?? 'customer',
       phone: json['phone'],
       location: json['location'] ?? '',
+      address: json['address'],
+      bio: json['bio'],
     );
   }
 
@@ -38,13 +44,18 @@ class User {
       'role': role,
       'phone': phone,
       'location': location,
+      'bio': bio,
+      // 'address' is excluded here because it might not exist in the profiles table for everyone
     };
+  }
+
+  /// Use this for inserting/updating the base profiles table
+  Map<String, dynamic> toProfileJson() {
+    return toJson();
   }
 }
 
 class Customer extends User {
-  String? address;
-
   Customer({
     required super.id,
     required super.username,
@@ -52,7 +63,7 @@ class Customer extends User {
     super.avatarUrl,
     super.phone,
     required super.location,
-    this.address,
+    super.address,
   }) : super(role: 'customer');
 
   factory Customer.fromProfile(User profile, {String? address}) {
@@ -63,20 +74,20 @@ class Customer extends User {
       avatarUrl: profile.avatarUrl,
       phone: profile.phone,
       location: profile.location,
-      address: address,
+      address: address ?? profile.address,
     );
   }
 
   @override
-  String toString() {
-    return 'Customer(id: $id, username: $username, fullName: $fullName, avatarUrl: $avatarUrl, phone: $phone, location: $location, address: $address)';
+  Map<String, dynamic> toJson() {
+    final map = super.toJson();
+    map['address'] = address; // Include address for customers in profiles table
+    return map;
   }
 }
 
 class Artisan extends User {
-  String? bio;
   List<String> skills;
-  String? address;
   double rating;
 
   Artisan({
@@ -86,9 +97,9 @@ class Artisan extends User {
     super.avatarUrl,
     super.phone,
     required super.location,
-    this.bio,
+    super.bio,
     this.skills = const [],
-    this.address,
+    super.address,
     this.rating = 0.0,
   }) : super(role: 'artisan');
 
@@ -105,9 +116,9 @@ class Artisan extends User {
       avatarUrl: profile.avatarUrl,
       phone: profile.phone,
       location: profile.location,
-      bio: bio,
+      bio: bio ?? profile.bio,
       skills: skills,
-      address: address,
+      address: address ?? profile.address,
       rating: rating,
     );
   }

@@ -30,7 +30,7 @@ class Products extends StatelessWidget {
           maxCrossAxisExtent: 250,
           crossAxisSpacing: 16,
           mainAxisSpacing: 16,
-          childAspectRatio: 0.75, // Adjusted for better label fitting
+          childAspectRatio: 0.68, // Fixed overflow by providing more height
         ),
         itemCount: items.length,
         itemBuilder: (context, index) {
@@ -155,7 +155,7 @@ class Products extends StatelessWidget {
                     ),
                     Expanded(
                       child: Padding(
-                        padding: const EdgeInsets.all(12.0),
+                        padding: const EdgeInsets.symmetric(horizontal: 12.0, vertical: 8.0),
                         child: Column(
                           mainAxisAlignment: MainAxisAlignment.center,
                           children: [

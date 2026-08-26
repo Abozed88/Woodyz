@@ -31,13 +31,21 @@ class _LoginState extends State<Login> {
       try {
         final profileData = await supabase
             .from('profiles')
-            .select()
+            .select('*, artisans(*)')
             .eq('id', session.user.id)
             .single();
         
+        debugPrint("Session Restore Raw Data: $profileData");
+
         if (mounted) {
-          final profile = User.fromJson(profileData);
-          AuthProvider(context: context).navigateBasedOnRole(profile);
+          if (profileData['role'] == 'artisan') {
+            final artisan = Artisan.fromJson(profileData);
+            debugPrint("Session Restore Artisan Address: ${artisan.address}");
+            AuthProvider(context: context).navigateBasedOnRole(artisan);
+          } else {
+            final profile = User.fromJson(profileData);
+            AuthProvider(context: context).navigateBasedOnRole(profile);
+          }
         }
       } catch (e) {
         if (mounted) setState(() => _isLoading = false);

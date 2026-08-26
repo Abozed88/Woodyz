@@ -65,14 +65,20 @@ class ProductsProvider {
       final newProduct = Product.fromJson(productData);
 
       if (image != null) {
-        final fileExt = image.path.split('.').last;
-        final fileName = '${newProduct.id}-${DateTime.now().millisecondsSinceEpoch}.$fileExt';
-        final filePath = fileName;
+        final fileExt = image.path.split('.').last.toLowerCase();
+        final fileName = '${DateTime.now().millisecondsSinceEpoch}.$fileExt';
+        final filePath = '${newProduct.artisanId}/$fileName';
 
-        await supabase.storage.from('product-images').upload(
+        final bytes = await image.readAsBytes();
+
+        await supabase.storage.from('product-images').uploadBinary(
               filePath,
-              image,
-              fileOptions: const sb.FileOptions(cacheControl: '3600', upsert: false),
+              bytes,
+              fileOptions: sb.FileOptions(
+                cacheControl: '3600',
+                upsert: false,
+                contentType: _getContentType(fileExt),
+              ),
             );
 
         final String publicUrl =
@@ -84,13 +90,29 @@ class ProductsProvider {
           'storage_path': filePath,
           'is_primary': true,
         });
-        
+
         newProduct.imageUrl = publicUrl;
       }
       return newProduct;
     } catch (e) {
       debugPrint("Error in addProduct: $e");
-      return null;
+      rethrow;
+    }
+  }
+
+  String _getContentType(String extension) {
+    switch (extension) {
+      case 'jpg':
+      case 'jpeg':
+        return 'image/jpeg';
+      case 'png':
+        return 'image/png';
+      case 'gif':
+        return 'image/gif';
+      case 'webp':
+        return 'image/webp';
+      default:
+        return 'application/octet-stream';
     }
   }
 

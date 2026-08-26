@@ -16,12 +16,19 @@ class AuthProvider {
 
   void navigateBasedOnRole(User profile, {Map<String, dynamic>? extraData}) {
     if (profile.role == 'customer') {
-      Customer c = Customer.fromProfile(profile);
+      Customer c;
+      if (profile is Customer) {
+        c = profile;
+      } else {
+        c = Customer.fromProfile(profile);
+      }
       Navigator.pushReplacement(
           context, MaterialPageRoute(builder: (context) => Home(customer: c)));
     } else if (profile.role == 'artisan') {
       Artisan a;
-      if (extraData != null) {
+      if (profile is Artisan) {
+        a = profile;
+      } else if (extraData != null) {
         a = Artisan.fromJson({...profile.toJson(), 'artisans': extraData});
       } else {
         a = Artisan.fromProfile(profile);
@@ -48,8 +55,11 @@ class AuthProvider {
             .eq('id', response.user!.id)
             .single();
         
+        debugPrint("Raw Login Data: $profileData");
+
         if (profileData['role'] == 'artisan') {
           final artisan = Artisan.fromJson(profileData);
+          debugPrint("Mapped Artisan Address: ${artisan.address}");
           if (context.mounted) {
             navigateBasedOnRole(artisan);
           }
@@ -72,14 +82,20 @@ class AuthProvider {
 
   Future<String> uploadAvatar(File image, String userId) async {
     try {
-      final fileExt = image.path.split('.').last;
-      final fileName = '$userId-${DateTime.now().millisecondsSinceEpoch}.$fileExt';
+      final fileExt = image.path.split('.').last.toLowerCase();
+      final fileName = '${DateTime.now().millisecondsSinceEpoch}.$fileExt';
       final filePath = fileName;
 
-      await supabase.storage.from('avatars').upload(
+      final bytes = await image.readAsBytes();
+
+      await supabase.storage.from('avatars').uploadBinary(
             filePath,
-            image,
-            fileOptions: const sb.FileOptions(cacheControl: '3600', upsert: false),
+            bytes,
+            fileOptions: sb.FileOptions(
+              cacheControl: '3600',
+              upsert: false,
+              contentType: _getContentType(fileExt),
+            ),
           );
 
       final String publicUrl =
@@ -87,7 +103,23 @@ class AuthProvider {
       return publicUrl;
     } catch (e) {
       debugPrint("Upload error: $e");
-      return "";
+      rethrow;
+    }
+  }
+
+  String _getContentType(String extension) {
+    switch (extension) {
+      case 'jpg':
+      case 'jpeg':
+        return 'image/jpeg';
+      case 'png':
+        return 'image/png';
+      case 'gif':
+        return 'image/gif';
+      case 'webp':
+        return 'image/webp';
+      default:
+        return 'application/octet-stream';
     }
   }
 
@@ -115,7 +147,7 @@ class AuthProvider {
         newUser.avatarUrl = avatarUrl;
 
         // Insert into profiles
-        await supabase.from('profiles').insert(newUser.toJson());
+        await supabase.from('profiles').insert(newUser.toProfileJson());
 
         // If artisan, insert into artisans table
         if (newUser.role == 'artisan' && artisanData != null) {
@@ -150,5 +182,59 @@ class AuthProvider {
 
   Future<void> signOut() async {
     await supabase.auth.signOut();
+  }
+
+  Future<bool> updateUserField({
+    required String userId,
+    required String role,
+    required String label,
+    required String value,
+  }) async {
+    try {
+      final String field = label.toLowerCase();
+      
+      // Determine columns and tables based on label
+      if (field == 'phone') {
+        await supabase.from('profiles').update({'phone': value}).eq('id', userId);
+      } else if (field == 'bio') {
+        // Update both if artisan
+        await supabase.from('profiles').update({'bio': value}).eq('id', userId);
+        if (role == 'artisan') {
+          await supabase.from('artisans').update({'bio': value}).eq('id', userId);
+        }
+      } else if (field == 'address') {
+        if (role == 'artisan') {
+          await supabase.from('artisans').update({'address': value}).eq('id', userId);
+        } else {
+          await supabase.from('profiles').update({'address': value}).eq('id', userId);
+        }
+      } else if (field == 'location') {
+        await supabase.from('profiles').update({'location': value}).eq('id', userId);
+      } else if (field == 'skills' && role == 'artisan') {
+        // Assume skills is a comma separated string when editing
+        final List<String> skillsList = value.split(',').map((s) => s.trim()).toList();
+        await supabase.from('artisans').update({'skills': skillsList}).eq('id', userId);
+      } else {
+        return false;
+      }
+      return true;
+    } catch (e) {
+      debugPrint("Update error: $e");
+      return false;
+    }
+  }
+
+  Future<String?> updateAvatar(File image, String userId) async {
+    try {
+      final url = await uploadAvatar(image, userId);
+      if (url.isNotEmpty) {
+        await supabase.from('profiles').update({'avatar_url': url}).eq('id', userId);
+        return url;
+      }
+      return null;
+    } catch (e) {
+      debugPrint("Update avatar error: $e");
+      return null;
+    }
   }
 }

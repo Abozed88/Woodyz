@@ -105,7 +105,7 @@ class ArtisanView extends StatelessWidget {
                         maxCrossAxisExtent: 250,
                         crossAxisSpacing: 10,
                         mainAxisSpacing: 10,
-                        childAspectRatio: 0.8,
+                        childAspectRatio: 0.72,
                       ),
                       itemCount: items.length,
                       itemBuilder: (context, index) {
@@ -147,7 +147,7 @@ class ArtisanView extends StatelessWidget {
                                           child: Text(
                                             item.title,
                                             style: const TextStyle(
-                                              fontSize: 16,
+                                              fontSize: 14,
                                               fontWeight: FontWeight.bold,
                                               fontFamily: "Saira"
                                             ),

@@ -74,7 +74,7 @@ class _SavedState extends State<Saved> {
         maxCrossAxisExtent: 250,
         crossAxisSpacing: 10,
         mainAxisSpacing: 10,
-        childAspectRatio: 0.8,
+        childAspectRatio: 0.72,
       ),
       itemCount: saved.length,
       itemBuilder: (context, index) {
@@ -150,7 +150,7 @@ class _SavedState extends State<Saved> {
                             style: TextStyle(
                               color: theme.colorScheme.onSurface,
                               fontFamily: "Saira",
-                              fontSize: 16,
+                              fontSize: 14,
                               fontWeight: FontWeight.bold,
                             ),
                             textAlign: TextAlign.center,

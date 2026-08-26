@@ -46,10 +46,15 @@ class PImage extends StatelessWidget {
                   ),
                 );
               },
-              errorBuilder: (context, error, stackTrace) => Container(
-                color: theme.colorScheme.surface,
-                child: Icon(Icons.broken_image, color: theme.colorScheme.onSurface.withOpacity(0.2), size: 40),
-              ),
+              errorBuilder: (context, error, stackTrace) {
+                print(error);
+                return Container(
+                  color: theme.colorScheme.surface,
+                  child: Icon(Icons.broken_image,
+                      color: theme.colorScheme.onSurface.withOpacity(0.2),
+                      size: 40),
+                );
+              }
             ),
       ),
     );
