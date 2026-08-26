@@ -20,6 +20,7 @@ class _UploadState extends State<Upload> {
   final TextEditingController _desccontroller = TextEditingController();
 
   File? _image;
+  final List<File> _additionalImages = [];
   final ImagePicker _picker = ImagePicker();
   bool _isUploading = false;
 
@@ -34,11 +35,32 @@ class _UploadState extends State<Upload> {
     }
   }
 
+  Future<void> _pickAdditionalImages() async {
+    if (_additionalImages.length >= 5) {
+      ScaffoldMessenger.of(context).showSnackBar(
+        const SnackBar(content: Text("You can add up to 5 additional images")),
+      );
+      return;
+    }
+
+    final List<XFile> pickedFiles = await _picker.pickMultiImage();
+    
+    if (pickedFiles.isNotEmpty) {
+      setState(() {
+        int spaceLeft = 5 - _additionalImages.length;
+        _additionalImages.addAll(
+          pickedFiles.take(spaceLeft).map((file) => File(file.path))
+        );
+      });
+    }
+  }
+
   void reset(){
     setState(() {
       _namecontroller.clear();
       _desccontroller.clear();
       _image = null;
+      _additionalImages.clear();
     });
   }
 
@@ -125,6 +147,71 @@ class _UploadState extends State<Upload> {
                   ),
                 ),
               ),
+              const SizedBox(height: 24),
+
+              // Additional Images Section
+              const Text(
+                "Additional Images (Max 5)",
+                style: TextStyle(
+                  fontSize: 14,
+                  fontWeight: FontWeight.w500,
+                  fontFamily: "Saira",
+                ),
+              ),
+              const SizedBox(height: 12),
+              SizedBox(
+                height: 80,
+                child: ListView.separated(
+                  scrollDirection: Axis.horizontal,
+                  itemCount: _additionalImages.length + 1,
+                  separatorBuilder: (context, index) => const SizedBox(width: 12),
+                  itemBuilder: (context, index) {
+                    if (index == _additionalImages.length) {
+                      if (_additionalImages.length >= 5) return const SizedBox.shrink();
+                      return GestureDetector(
+                        onTap: _pickAdditionalImages,
+                        child: Container(
+                          width: 80,
+                          decoration: BoxDecoration(
+                            borderRadius: BorderRadius.circular(12),
+                            color: theme.colorScheme.surface,
+                            border: Border.all(color: theme.colorScheme.onSurface.withValues(alpha: 0.1), width: 1.5),
+                          ),
+                          child: Icon(Icons.add_a_photo_outlined, color: primaryColor, size: 28),
+                        ),
+                      );
+                    }
+                    return Stack(
+                      children: [
+                        ClipRRect(
+                          borderRadius: BorderRadius.circular(12),
+                          child: Image.file(
+                            _additionalImages[index],
+                            width: 80,
+                            height: 80,
+                            fit: BoxFit.cover,
+                          ),
+                        ),
+                        Positioned(
+                          top: 4,
+                          right: 4,
+                          child: GestureDetector(
+                            onTap: () => setState(() => _additionalImages.removeAt(index)),
+                            child: Container(
+                              padding: const EdgeInsets.all(2),
+                              decoration: const BoxDecoration(
+                                color: Colors.black54,
+                                shape: BoxShape.circle,
+                              ),
+                              child: const Icon(Icons.close, color: Colors.white, size: 14),
+                            ),
+                          ),
+                        ),
+                      ],
+                    );
+                  },
+                ),
+              ),
               const SizedBox(height: 40),
 
               CustomTextField(
@@ -199,7 +286,7 @@ class _UploadState extends State<Upload> {
         p.description = _desccontroller.text.trim();
         p.artisanId = widget.artisan.id;
         
-        final newProduct = await ProductsProvider().addProduct(p, _image);
+        final newProduct = await ProductsProvider().addProduct(p, _image, _additionalImages);
         if(newProduct != null && mounted){
           ScaffoldMessenger.of(context).showSnackBar(
             const SnackBar(content: Text("Product uploaded successfully!")),

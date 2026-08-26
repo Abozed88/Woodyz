@@ -19,11 +19,56 @@ class Details extends StatefulWidget {
 
 class _DetailsState extends State<Details> {
   late bool _saved;
+  String? _displayImageUrl;
+  
+  List<Review> _reviews = [];
+  bool _isLoadingReviews = true;
+  double _userRating = 5.0;
+  final TextEditingController _reviewController = TextEditingController();
 
   @override
   void initState() {
     super.initState();
     _saved = widget.already_saved;
+    _displayImageUrl = widget.p.imageUrl;
+    _loadReviews();
+  }
+
+  Future<void> _loadReviews() async {
+    final reviews = await ProductsProvider().fetchReviews(widget.p.id!);
+    if (mounted) {
+      setState(() {
+        _reviews = reviews;
+        _isLoadingReviews = false;
+      });
+    }
+  }
+
+  Future<void> _submitReview() async {
+    if (widget.u == null) return;
+    
+    final success = await ProductsProvider().addReview(
+      widget.p.id!,
+      widget.u!.id,
+      _userRating,
+      _reviewController.text.trim(),
+    );
+
+    if (success && mounted) {
+      _reviewController.clear();
+      ScaffoldMessenger.of(context).showSnackBar(
+        const SnackBar(content: Text("Review submitted! Thank you.")),
+      );
+      _loadReviews();
+      // Optionally refresh product to get new average rating
+      final updatedProduct = await ProductsProvider().fetchProductById(widget.p.id!);
+      if (updatedProduct != null && mounted) {
+        setState(() {
+          widget.p.averageRating = updatedProduct.averageRating;
+          widget.p.ratingCount = updatedProduct.ratingCount;
+        });
+      }
+    }
   }
 
   Future<void> _launchURL(String username) async {
@@ -33,6 +78,68 @@ class _DetailsState extends State<Details> {
     } else {
       throw "Could not launch $url";
     }
+  }
+
+  Widget _buildReviewItem(BuildContext context, Review review) {
+    final theme = Theme.of(context);
+    final primaryColor = theme.colorScheme.primary;
+
+    return Row(
+      crossAxisAlignment: CrossAxisAlignment.start,
+      children: [
+        CircleAvatar(
+          radius: 20,
+          backgroundImage: review.user?.avatarUrl != null && review.user!.avatarUrl!.isNotEmpty
+              ? NetworkImage(review.user!.avatarUrl!)
+              : const AssetImage("assets/images/profile.webp") as ImageProvider,
+        ),
+        const SizedBox(width: 12),
+        Expanded(
+          child: Column(
+            crossAxisAlignment: CrossAxisAlignment.start,
+            children: [
+              Row(
+                mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                children: [
+                  Text(
+                    review.user?.fullName ?? "User",
+                    style: const TextStyle(
+                      fontWeight: FontWeight.bold,
+                      fontFamily: "Saira",
+                    ),
+                  ),
+                  Text(
+                    review.createdAt?.substring(0, 10) ?? "",
+                    style: TextStyle(
+                      fontSize: 12,
+                      color: theme.colorScheme.onSurface.withValues(alpha: 0.4),
+                    ),
+                  ),
+                ],
+              ),
+              Row(
+                children: List.generate(5, (index) {
+                  return Icon(
+                    index < review.rating ? Icons.star_rounded : Icons.star_outline_rounded,
+                    color: primaryColor,
+                    size: 16,
+                  );
+                }),
+              ),
+              const SizedBox(height: 4),
+              Text(
+                review.review,
+                style: TextStyle(
+                  fontSize: 14,
+                  color: theme.colorScheme.onSurface.withValues(alpha: 0.7),
+                  fontFamily: "Saira",
+                ),
+              ),
+            ],
+          ),
+        ),
+      ],
+    );
   }
 
   @override
@@ -118,40 +225,101 @@ class _DetailsState extends State<Details> {
                     crossAxisAlignment: CrossAxisAlignment.start,
                     children: [
                       // Product Image with AspectRatio to prevent deformity
-                      ClipRRect(
-                        borderRadius: BorderRadius.circular(24),
-                        child: Container(
-                          color: theme.colorScheme.surface,
-                          child: AspectRatio(
-                            aspectRatio: 4 / 3, // Natural landscape ratio for products
-                            child: widget.p.imageUrl != null
-                              ? Image.network(
-                                  widget.p.imageUrl!,
-                                  width: double.infinity,
-                                  fit: BoxFit.cover,
-                                  loadingBuilder: (context, child, loadingProgress) {
-                                    if (loadingProgress == null) return child;
-                                    return Center(
-                                      child: CircularProgressIndicator(
-                                        value: loadingProgress.expectedTotalBytes != null
-                                            ? loadingProgress.cumulativeBytesLoaded / loadingProgress.expectedTotalBytes!
-                                            : null,
-                                        color: primaryColor,
+                      GestureDetector(
+                        onTap: () {
+                          if (_displayImageUrl != null) {
+                            Navigator.push(
+                              context,
+                              MaterialPageRoute(
+                                builder: (context) => FullScreenImage(imageUrl: _displayImageUrl!),
+                              ),
+                            );
+                          }
+                        },
+                        child: Hero(
+                          tag: _displayImageUrl ?? 'product_image',
+                          child: ClipRRect(
+                            borderRadius: BorderRadius.circular(24),
+                            child: Container(
+                              color: theme.colorScheme.surface,
+                              child: AspectRatio(
+                                aspectRatio: 4 / 3, // Natural landscape ratio for products
+                                child: _displayImageUrl != null
+                                  ? Image.network(
+                                      _displayImageUrl!,
+                                      width: double.infinity,
+                                      fit: BoxFit.cover,
+                                      loadingBuilder: (context, child, loadingProgress) {
+                                        if (loadingProgress == null) return child;
+                                        return Center(
+                                          child: CircularProgressIndicator(
+                                            value: loadingProgress.expectedTotalBytes != null
+                                                ? loadingProgress.cumulativeBytesLoaded / loadingProgress.expectedTotalBytes!
+                                                : null,
+                                            color: primaryColor,
+                                          ),
+                                        );
+                                      },
+                                      errorBuilder: (context, error, stackTrace) => Container(
+                                        color: theme.colorScheme.surface,
+                                        child: Icon(Icons.broken_image_outlined, size: 64, color: theme.colorScheme.onSurface.withValues(alpha: 0.1)),
                                       ),
-                                    );
-                                  },
-                                  errorBuilder: (context, error, stackTrace) => Container(
-                                    color: theme.colorScheme.surface,
-                                    child: Icon(Icons.broken_image_outlined, size: 64, color: theme.colorScheme.onSurface.withValues(alpha: 0.1)),
-                                  ),
-                                )
-                              : Container(
-                                  color: theme.colorScheme.surface,
-                                  child: Icon(Icons.image_outlined, size: 64, color: theme.colorScheme.onSurface.withValues(alpha: 0.1)),
-                                ),
+                                    )
+                                  : Container(
+                                      color: theme.colorScheme.surface,
+                                      child: Icon(Icons.image_outlined, size: 64, color: theme.colorScheme.onSurface.withValues(alpha: 0.1)),
+                                    ),
+                              ),
+                            ),
                           ),
                         ),
                       ),
+                      const SizedBox(height: 16),
+
+                      // Additional Images Row
+                      if (widget.p.additionalImages.isNotEmpty)
+                        SizedBox(
+                          height: 70,
+                          child: ListView.separated(
+                            scrollDirection: Axis.horizontal,
+                            itemCount: widget.p.additionalImages.length + 1,
+                            separatorBuilder: (context, index) => const SizedBox(width: 12),
+                            itemBuilder: (context, index) {
+                              final String imgUrl = index == 0 
+                                  ? (widget.p.imageUrl ?? '') 
+                                  : widget.p.additionalImages[index - 1];
+                              
+                              if (imgUrl.isEmpty) return const SizedBox.shrink();
+
+                              final bool isSelected = _displayImageUrl == imgUrl;
+
+                              return GestureDetector(
+                                onTap: () => setState(() => _displayImageUrl = imgUrl),
+                                child: Container(
+                                  width: 70,
+                                  decoration: BoxDecoration(
+                                    borderRadius: BorderRadius.circular(12),
+                                    border: Border.all(
+                                      color: isSelected ? primaryColor : Colors.transparent,
+                                      width: 2,
+                                    ),
+                                  ),
+                                  child: ClipRRect(
+                                    borderRadius: BorderRadius.circular(10),
+                                    child: Image.network(
+                                      imgUrl,
+                                      fit: BoxFit.cover,
+                                      errorBuilder: (context, error, stackTrace) => Container(
+                                        color: theme.colorScheme.surface,
+                                        child: const Icon(Icons.broken_image, size: 20),
+                                      ),
+                                    ),
+                                  ),
+                                ),
+                              );
+                            },
+                          ),
+                        ),
                       const SizedBox(height: 24),
 
                       // Category & Availability Row
@@ -230,7 +398,20 @@ class _DetailsState extends State<Details> {
                               children: [
                                 Icon(Icons.star_rounded, color: primaryColor, size: 20),
                                 const SizedBox(width: 4),
-                                const Text("4.5", style: TextStyle(fontWeight: FontWeight.bold)),
+                                Text(
+                                  widget.p.averageRating.toStringAsFixed(1), 
+                                  style: const TextStyle(fontWeight: FontWeight.bold)
+                                ),
+                                if (widget.p.ratingCount > 0) ...[
+                                  const SizedBox(width: 4),
+                                  Text(
+                                    "(${widget.p.ratingCount})",
+                                    style: TextStyle(
+                                      fontSize: 12,
+                                      color: theme.colorScheme.onSurface.withValues(alpha: 0.5),
+                                    ),
+                                  ),
+                                ],
                               ],
                             ),
                           ),
@@ -299,7 +480,128 @@ class _DetailsState extends State<Details> {
                       Widget2(artisan: widget.a),
                       const SizedBox(height: 40),
 
+                      // Reviews Section
+                      Row(
+                        mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                        children: [
+                          const Text(
+                            "Reviews",
+                            style: TextStyle(
+                              fontSize: 20,
+                              fontWeight: FontWeight.bold,
+                              fontFamily: "Saira",
+                            ),
+                          ),
+                          if (widget.p.ratingCount > 0)
+                            Text(
+                              "${widget.p.ratingCount} comments",
+                              style: TextStyle(
+                                color: theme.colorScheme.onSurface.withValues(alpha: 0.5),
+                                fontSize: 14,
+                                fontFamily: "Saira",
+                              ),
+                            ),
+                        ],
+                      ),
+                      const SizedBox(height: 16),
+                      
+                      if (_isLoadingReviews)
+                        const Center(child: CircularProgressIndicator())
+                      else if (_reviews.isEmpty)
+                        Center(
+                          child: Padding(
+                            padding: const EdgeInsets.symmetric(vertical: 20),
+                            child: Text(
+                              widget.asArtisan? "No reviews yet!":
+                              "No reviews yet. Be the first to rate!",
+                              style: TextStyle(
+                                color: theme.colorScheme.onSurface.withValues(alpha: 0.4),
+                                fontFamily: "Saira",
+                              ),
+                            ),
+                          ),
+                        )
+                      else
+                        ListView.separated(
+                          shrinkWrap: true,
+                          physics: const NeverScrollableScrollPhysics(),
+                          itemCount: _reviews.length,
+                          separatorBuilder: (context, index) => const SizedBox(height: 16),
+                          itemBuilder: (context, index) {
+                            final review = _reviews[index];
+                            return _buildReviewItem(context, review);
+                          },
+                        ),
+                      
+                      const SizedBox(height: 32),
 
+                      // Add Review Form (only for customers)
+                      if (widget.u != null && !widget.asArtisan) ...[
+                        const Text(
+                          "Write a Review",
+                          style: TextStyle(
+                            fontSize: 18,
+                            fontWeight: FontWeight.bold,
+                            fontFamily: "Saira",
+                          ),
+                        ),
+                        const SizedBox(height: 12),
+                        Container(
+                          padding: const EdgeInsets.all(16),
+                          decoration: BoxDecoration(
+                            color: theme.colorScheme.surface,
+                            borderRadius: BorderRadius.circular(16),
+                            border: Border.all(color: theme.colorScheme.onSurface.withValues(alpha: 0.05)),
+                          ),
+                          child: Column(
+                            crossAxisAlignment: CrossAxisAlignment.start,
+                            children: [
+                              Row(
+                                children: List.generate(5, (index) {
+                                  return IconButton(
+                                    onPressed: () => setState(() => _userRating = index + 1.0),
+                                    icon: Icon(
+                                      index < _userRating ? Icons.star_rounded : Icons.star_outline_rounded,
+                                      color: primaryColor,
+                                      size: 32,
+                                    ),
+                                    padding: EdgeInsets.zero,
+                                    constraints: const BoxConstraints(),
+                                  );
+                                }),
+                              ),
+                              const SizedBox(height: 12),
+                              TextField(
+                                controller: _reviewController,
+                                maxLines: 3,
+                                decoration: InputDecoration(
+                                  hintText: "Share your thoughts about this product...",
+                                  hintStyle: TextStyle(
+                                    fontSize: 14,
+                                    color: theme.colorScheme.onSurface.withValues(alpha: 0.4),
+                                  ),
+                                  filled: true,
+                                  fillColor: theme.scaffoldBackgroundColor,
+                                  border: OutlineInputBorder(
+                                    borderRadius: BorderRadius.circular(12),
+                                    borderSide: BorderSide.none,
+                                  ),
+                                ),
+                              ),
+                              const SizedBox(height: 12),
+                              ElevatedButton(
+                                onPressed: _submitReview,
+                                style: ElevatedButton.styleFrom(
+                                  minimumSize: const Size(double.infinity, 50),
+                                  shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
+                                ),
+                                child: const Text("SUBMIT REVIEW"),
+                              ),
+                            ],
+                          ),
+                        ),
+                        const SizedBox(height: 40),
+                      ],
 
                       // Timestamps
                       if (widget.p.updatedAt != null) ...[
@@ -344,6 +646,52 @@ class _DetailsState extends State<Details> {
           ],
         ),
       )
+    );
+  }
+}
+
+class FullScreenImage extends StatelessWidget {
+  final String imageUrl;
+
+  const FullScreenImage({super.key, required this.imageUrl});
+
+  @override
+  Widget build(BuildContext context) {
+    return Scaffold(
+      backgroundColor: Colors.black,
+      body: Stack(
+        children: [
+          Center(
+            child: InteractiveViewer(
+              minScale: 0.5,
+              maxScale: 4.0,
+              child: Hero(
+                tag: imageUrl,
+                child: Image.network(
+                  imageUrl,
+                  fit: BoxFit.contain,
+                  loadingBuilder: (context, child, loadingProgress) {
+                    if (loadingProgress == null) return child;
+                    return const Center(child: CircularProgressIndicator(color: Colors.white));
+                  },
+                ),
+              ),
+            ),
+          ),
+          SafeArea(
+            child: Padding(
+              padding: const EdgeInsets.all(16.0),
+              child: CircleAvatar(
+                backgroundColor: Colors.black.withOpacity(0.5),
+                child: IconButton(
+                  icon: const Icon(Icons.close, color: Colors.white),
+                  onPressed: () => Navigator.pop(context),
+                ),
+              ),
+            ),
+          ),
+        ],
+      ),
     );
   }
 }

@@ -1,0 +1,7 @@
+- `[x]` Update `Product` entity with `averageRating` and `ratingCount`
+- `[x]` Create `Review` entity
+- `[x]` Add `fetchReviews` and `addReview` to `ProductsProvider`
+- `[x]` Update `Details` page to display average rating and count
+- `[x]` Add Reviews section to `Details` page
+- `[x]` Implement Review submission form in `Details` page
+- `[x]` Verify implementation
