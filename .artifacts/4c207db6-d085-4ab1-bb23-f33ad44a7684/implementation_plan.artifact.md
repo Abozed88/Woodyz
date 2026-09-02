@@ -1,43 +1,40 @@
-# Implementation Plan - Product Reviews and Ratings
+# Implementation Plan - Fix RLS Update Error
 
-Implement a system for users to rate and review products. Reviews will be stored in the `product_reviews` table, and the average rating will be reflected in the `products` table.
+Resolve the `PostgrestException` (RLS violation) occurring when updating product availability.
 
 ## User Review Required
 
-> [!NOTE]
-> The database is expected to handle the calculation of `average_rating` and `rating_count` on the `products` table (via triggers or other means). We will fetch and display these values.
+> [!IMPORTANT]
+> The RLS error `new row violates row-level security policy` usually means the user no longer has permission to see/check the row after the update.
+>
+> **Action for User:** Please verify in your Supabase Dashboard that your **SELECT** policy allows you to see products where `is_available = false` if you are the owner.
+>
+> Example SQL fix for your dashboard:
+> ```sql
+> -- Allow artisans to see their own products regardless of availability
+> CREATE POLICY "Artisans can see all their own products"
+> ON products FOR SELECT
+> TO authenticated
+> USING (auth.uid() = artisan_id);
+> ```
 
 ## Proposed Changes
 
 ### Domain Layer
 
 #### [MODIFY] [product_entity.dart](file:///C:/Users/Grandiose/Documents/Woodyz/lib/features/products/domain/entities/product_entity.dart)
-- Add `double averageRating` and `int ratingCount` fields.
-- Update `fromJson` to parse these fields from the database.
-
-#### [NEW] [review_entity.dart](file:///C:/Users/Grandiose/Documents/Woodyz/lib/features/products/domain/entities/review_entity.dart)
-- Define a `Review` class with fields: `id`, `productId`, `userId`, `rating`, `review`, `createdAt`, `updatedAt`, and `User? user` (to display the reviewer's info).
+- Add `toUpdateJson()` method.
+- This method will return a Map **excluding** `id`, `artisan_id`, and `created_at`.
+- This prevents RLS from thinking we are trying to change the owner or ID of the product.
 
 ### Data Layer
 
 #### [MODIFY] [products_provider.dart](file:///C:/Users/Grandiose/Documents/Woodyz/lib/features/products/presentation/providers/products_provider.dart)
-- Add `fetchReviews(int productId)` to get reviews for a specific product, including reviewer profiles.
-- Add `addReview(int productId, String userId, double rating, String review)` to submit a new review to Supabase.
-
-### Presentation Layer
-
-#### [MODIFY] [details.dart](file:///C:/Users/Grandiose/Documents/Woodyz/lib/features/auth/presentation/pages/details.dart)
-- Update the rating indicator in the header to use `widget.p.averageRating` and show `widget.p.ratingCount`.
-- Add a "Reviews" section below the Artisan card.
-- Implement a review submission form (or dialog) accessible only to customers.
-- Display a list of reviews with reviewer avatars, names, ratings, and comments.
+- Update `updateProduct(Product p)` to use `p.toUpdateJson()` instead of `p.toJson()`.
 
 ## Verification Plan
 
-### Automated Tests
-- None requested.
-
 ### Manual Verification
-- **Submission**: Log in as a customer, submit a review with a rating (1-5) and a comment. Verify it appears in the list.
-- **Display**: Verify the `average_rating` in the product header updates after submitting a review (may require a refresh or provider update).
-- **Profile Link**: Ensure review thumbnails/names display correctly.
+- **Edit Flow**: Change `isAvailable` to `false` in the Edit screen and save.
+- **Success**: The product should save successfully without the Postgres error.
+- **Data Check**: Verify in Supabase that the `is_available` column is now `false` for that record.

@@ -228,9 +228,40 @@ class AuthProvider {
 
   Future<String?> updateAvatar(File image, String userId) async {
     try {
+      // 1. Get current avatar URL to delete later
+      final profile = await supabase
+          .from('profiles')
+          .select('avatar_url')
+          .eq('id', userId)
+          .single();
+      
+      final String? oldUrl = profile['avatar_url'];
+
+      // 2. Upload new avatar
       final url = await uploadAvatar(image, userId);
+      
       if (url.isNotEmpty) {
+        // 3. Update profile with new URL
         await supabase.from('profiles').update({'avatar_url': url}).eq('id', userId);
+        
+        // 4. Delete old avatar from storage if it exists
+        if (oldUrl != null && oldUrl.isNotEmpty) {
+          try {
+            final Uri uri = Uri.parse(oldUrl);
+            final List<String> pathSegments = uri.pathSegments;
+            // The path in Supabase storage URL is usually: /storage/v1/object/public/bucket/path
+            // So if pathSegments contains 'avatars', the next segment is the filename
+            final int avatarsIndex = pathSegments.indexOf('avatars');
+            if (avatarsIndex != -1 && avatarsIndex < pathSegments.length - 1) {
+              final String oldFileName = pathSegments.last;
+              await supabase.storage.from('avatars').remove([oldFileName]);
+            }
+          } catch (e) {
+            debugPrint("Failed to delete old avatar file: $e");
+            // Don't rethrow, the update was successful
+          }
+        }
+        
         return url;
       }
       return null;

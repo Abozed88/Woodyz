@@ -35,9 +35,9 @@ class Widget1 extends StatelessWidget {
             _buildInfoBox(
               context,
               label: "Availability",
-              value: p.isAvailable ? "In Stock" : "Sold Out",
-              icon: p.isAvailable ? Icons.check_circle_outline : Icons.highlight_off_outlined,
-              valueColor: p.isAvailable ? Colors.green : Colors.red,
+              value: p.status.displayName,
+              icon: _getStatusIcon(p.status),
+              valueColor: _getStatusColor(p.status),
             ),
             _buildInfoBox(
               context,
@@ -49,6 +49,24 @@ class Widget1 extends StatelessWidget {
         ),
       ],
     );
+  }
+
+  IconData _getStatusIcon(ProductStatus status) {
+    switch (status) {
+      case ProductStatus.inStock: return Icons.check_circle_outline;
+      case ProductStatus.onDemand: return Icons.access_time_outlined;
+      case ProductStatus.inProduction: return Icons.build_outlined;
+      case ProductStatus.unavailable: return Icons.highlight_off_outlined;
+    }
+  }
+
+  Color _getStatusColor(ProductStatus status) {
+    switch (status) {
+      case ProductStatus.inStock: return Colors.green;
+      case ProductStatus.onDemand: return Colors.blue;
+      case ProductStatus.inProduction: return Colors.orange;
+      case ProductStatus.unavailable: return Colors.red;
+    }
   }
 
   Widget _buildInfoBox(BuildContext context, {

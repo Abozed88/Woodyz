@@ -15,66 +15,62 @@ class SearchCont extends StatelessWidget {
     double width = MediaQuery.of(context).size.width;
     
     return Container(
-        width: 0.85*width,
-        height: 170,
+        width: 0.9*width,
+        padding: const EdgeInsets.all(24),
         decoration: BoxDecoration(
           gradient: LinearGradient(
-            colors: isDark ? [
-              const Color.fromRGBO(46, 46, 45, 1),
-              const Color.fromRGBO(74, 36, 7, 1),
-            ] : [
-              theme.colorScheme.primary.withOpacity(0.1),
-              theme.colorScheme.primary.withOpacity(0.2),
+            colors: [
+              const Color(0xFF2E2E2D),
+              const Color(0xFF4A2407),
             ],
             begin: Alignment.topLeft,
             end: Alignment.bottomRight,
           ),
-          borderRadius: BorderRadius.circular(12),
-          border: isDark ? null : Border.all(color: theme.colorScheme.primary.withOpacity(0.2)),
+          borderRadius: BorderRadius.circular(20),
+          boxShadow: isDark ? [] : [
+            BoxShadow(
+              color: theme.colorScheme.primary.withOpacity(0.05),
+              blurRadius: 20,
+              offset: const Offset(0, 10),
+            )
+          ],
         ),
-        child: Center(
-          child: Column(
-            mainAxisSize: MainAxisSize.min,
-            crossAxisAlignment: CrossAxisAlignment.start,
-            children: [
-              Text(
-                "Discover unique handcrafted products",
-                style: TextStyle(
-                  fontSize: 18,
-                  fontWeight: FontWeight.bold,
-                  color: isDark ? Colors.white : theme.colorScheme.onSurface, 
-                  fontFamily: "Saira"
-                ),
+        child: Column(
+          mainAxisSize: MainAxisSize.min,
+          crossAxisAlignment: CrossAxisAlignment.start,
+          children: [
+            const Text(
+              "Discover unique\nhandcrafted products",
+              style: TextStyle(
+                fontSize: 22,
+                fontWeight: FontWeight.bold,
+                height: 1.2,
+                color: Colors.white, 
+                fontFamily: "Saira"
               ),
-              const SizedBox(height: 10,),
-              SizedBox(
-                width: 0.75*width,
-                child: TextField(
-                    controller: searchcontroller,
-                    style: TextStyle(color: isDark ? Colors.white : theme.colorScheme.onSurface),
-                    cursorColor: theme.colorScheme.primary,
-                    decoration: InputDecoration(
-                      hintText: "search crafts",
-                      hintStyle: TextStyle(color: isDark ? Colors.grey : theme.colorScheme.onSurface.withOpacity(0.5)),
-                      prefixIcon: Icon(Icons.search, color: isDark ? Colors.grey : theme.colorScheme.primary),
-                      contentPadding: const EdgeInsets.symmetric(vertical: 15, horizontal: 15),
-                      fillColor: isDark ? const Color.fromRGBO(46, 46, 45, 1) : Colors.white,
-                      border: OutlineInputBorder(
-                        borderRadius: BorderRadius.circular(9),
-                        borderSide: isDark ? BorderSide.none : BorderSide(color: theme.colorScheme.primary.withOpacity(0.3)),
-                      ),
-                      enabledBorder: OutlineInputBorder(
-                        borderRadius: BorderRadius.circular(9),
-                        borderSide: isDark ? const BorderSide(color: Colors.grey, width: 1.0) : BorderSide(color: theme.colorScheme.primary.withOpacity(0.3)),
-                      ),
-                    ),
-                    onSubmitted: (v){
-                      Navigator.push(context, MaterialPageRoute(builder: (context)=>Searched(query: v, u: u)));
-                    },
+            ),
+            const SizedBox(height: 20,),
+            TextField(
+                controller: searchcontroller,
+                style: const TextStyle(color: Colors.white),
+                cursorColor: theme.colorScheme.primary,
+                decoration: InputDecoration(
+                  hintText: "Search crafts...",
+                  hintStyle: TextStyle(color: Colors.white.withOpacity(0.5)),
+                  prefixIcon: const Icon(Icons.search, color: Colors.white70),
+                  contentPadding: const EdgeInsets.symmetric(vertical: 16),
+                  fillColor: Colors.white.withOpacity(0.1),
+                  filled: true,
+                  border: OutlineInputBorder(
+                    borderRadius: BorderRadius.circular(15),
+                    borderSide: BorderSide.none,
+                  ),
                 ),
-              )
-            ],
-          ),
+                onSubmitted: (v){
+                  Navigator.push(context, MaterialPageRoute(builder: (context)=>Searched(query: v, u: u)));
+                },
+            ),
+          ],
         )
     );
   }
@@ -97,68 +93,66 @@ class Categories extends StatelessWidget {
   Widget build(BuildContext context) {
     final theme = Theme.of(context);
     final isDark = theme.brightness == Brightness.dark;
-    final scrollController = ScrollController();
     double width = MediaQuery.of(context).size.width;
     
-    return SizedBox(
-      width: width * 0.85,
-      height: 125,
-      child: Scrollbar(
-        controller: scrollController,
-        thumbVisibility: true,
-        child: ListView.builder(
-          controller: scrollController,
-          scrollDirection: Axis.horizontal,
-          itemCount: categories.length,
-          itemBuilder: (context, i) {
-            return Padding(
-              padding: const EdgeInsets.symmetric(horizontal: 2.0),
-              child: ElevatedButton(
-                onPressed: (){
-                  Navigator.push(context, MaterialPageRoute(builder: (context)=>Category(u: u, category: categories[i].$1)));
-                },
-                style: ElevatedButton.styleFrom(
-                  backgroundColor: Colors.transparent,
-                  shadowColor: Colors.transparent,
-                  padding: const EdgeInsets.symmetric(horizontal: 5),
-                ),
-                child: Column(
-                  mainAxisAlignment: MainAxisAlignment.center,
-                  children: [
-                    Container(
-                      height: 60,
-                      width: 60,
-                      decoration: BoxDecoration(
-                        borderRadius: BorderRadius.circular(12),
-                        color: isDark ? const Color.fromRGBO(46, 46, 45, 1) : Colors.white,
-                        border: Border.all(
-                          width: 1.6,
-                          color: color,
-                        ),
-                        boxShadow: isDark ? null : [
-                          BoxShadow(
-                            color: Colors.black.withOpacity(0.05),
-                            blurRadius: 10,
-                            offset: const Offset(0, 4),
-                          )
-                        ],
+    return Container(
+      width: width,
+      height: 110,
+      margin: const EdgeInsets.only(top: 10),
+      child: ListView.builder(
+        padding: const EdgeInsets.symmetric(horizontal: 20),
+        scrollDirection: Axis.horizontal,
+        itemCount: categories.length,
+        itemBuilder: (context, i) {
+          return Padding(
+            padding: const EdgeInsets.only(right: 12.0),
+            child: InkWell(
+              onTap: () {
+                Navigator.push(context, MaterialPageRoute(builder: (context)=>Category(u: u, category: categories[i].$1)));
+              },
+              borderRadius: BorderRadius.circular(16),
+              child: Column(
+                mainAxisAlignment: MainAxisAlignment.center,
+                children: [
+                  Container(
+                    height: 64,
+                    width: 64,
+                    decoration: BoxDecoration(
+                      borderRadius: BorderRadius.circular(16),
+                      color: isDark ? const Color(0xFF2E2E2D) : Colors.white,
+                      border: Border.all(
+                        width: 1.2,
+                        color: color.withOpacity(0.4),
                       ),
-                      child: Icon(
-                        categories[i].$2.icon,
-                        color: color,
-                      ),
+                      boxShadow: isDark ? [] : [
+                        BoxShadow(
+                          color: Colors.black.withOpacity(0.04),
+                          blurRadius: 8,
+                          offset: const Offset(0, 4),
+                        )
+                      ],
                     ),
-                    const SizedBox(height: 5),
-                    Text(
-                      categories[i].$1,
-                      style: TextStyle(color: theme.colorScheme.onSurface, fontSize: 12),
-                    )
-                  ],
-                ),
-              )
-            );
-          },
-        ),
+                    child: Icon(
+                      categories[i].$2.icon,
+                      color: color,
+                      size: 28,
+                    ),
+                  ),
+                  const SizedBox(height: 8),
+                  Text(
+                    categories[i].$1,
+                    style: TextStyle(
+                      color: theme.colorScheme.onSurface, 
+                      fontSize: 12,
+                      fontWeight: FontWeight.w500,
+                      fontFamily: "Saira",
+                    ),
+                  )
+                ],
+              ),
+            ),
+          );
+        },
       ),
     );
   }

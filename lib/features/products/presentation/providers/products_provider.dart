@@ -17,7 +17,7 @@ class ProductsProvider {
       var request = supabase
           .from('products')
           .select('*, product_images(*)')
-          .eq('is_available', true);
+          .neq('availability', 'Unavailable');
 
       if (category != "all") {
         request = request.eq('category', category);
@@ -112,11 +112,14 @@ class ProductsProvider {
 
       // 1. Handle Primary Image
       if (primaryImage != null) {
-        final String publicUrl = await _uploadImage(newProduct.artisanId, primaryImage);
+        final uploadResult = await _uploadImage(newProduct.artisanId, primaryImage);
+        final String publicUrl = uploadResult['url']!;
+        final String storagePath = uploadResult['path']!;
 
         await supabase.from('product_images').insert({
           'product_id': newProduct.id,
           'image_url': publicUrl,
+          'storage_path': storagePath,
           'is_primary': true,
         });
 
@@ -127,11 +130,14 @@ class ProductsProvider {
       if (additionalImages != null && additionalImages.isNotEmpty) {
         List<String> uploadedUrls = [];
         for (var file in additionalImages) {
-          final String publicUrl = await _uploadImage(newProduct.artisanId, file);
+          final uploadResult = await _uploadImage(newProduct.artisanId, file);
+          final String publicUrl = uploadResult['url']!;
+          final String storagePath = uploadResult['path']!;
           
           await supabase.from('product_images').insert({
             'product_id': newProduct.id,
             'image_url': publicUrl,
+            'storage_path': storagePath,
             'is_primary': false,
           });
           uploadedUrls.add(publicUrl);
@@ -146,7 +152,7 @@ class ProductsProvider {
     }
   }
 
-  Future<String> _uploadImage(String artisanId, File image) async {
+  Future<Map<String, String>> _uploadImage(String artisanId, File image) async {
     final fileExt = image.path.split('.').last.toLowerCase();
     final fileName = '${DateTime.now().microsecondsSinceEpoch}.${fileExt}';
     final filePath = '$artisanId/$fileName';
@@ -163,7 +169,8 @@ class ProductsProvider {
           ),
         );
 
-    return supabase.storage.from('product-images').getPublicUrl(filePath);
+    final publicUrl = supabase.storage.from('product-images').getPublicUrl(filePath);
+    return {'url': publicUrl, 'path': filePath};
   }
 
   String _getContentType(String extension) {
@@ -204,6 +211,51 @@ class ProductsProvider {
       return true;
     } catch (e) {
       debugPrint("Error in unsaveProduct: $e");
+      return false;
+    }
+  }
+
+  Future<bool> deleteProduct(int productId) async {
+    try {
+      // 1. Get image paths to delete from storage
+      final images = await supabase
+          .from('product_images')
+          .select('storage_path')
+          .eq('product_id', productId);
+      
+      final List<String> paths = (images as List)
+          .map((img) => img['storage_path'] as String)
+          .toList();
+
+      // 2. Delete files from storage
+      if (paths.isNotEmpty) {
+        await supabase.storage.from('product-images').remove(paths);
+      }
+
+      // 3. Delete related records explicitly to avoid constraint errors if cascades aren't set
+      await supabase.from('product_images').delete().eq('product_id', productId);
+      await supabase.from('product_reviews').delete().eq('product_id', productId);
+      await supabase.from('favorites').delete().eq('product_id', productId);
+
+      // 4. Finally delete the product
+      await supabase.from('products').delete().eq('id', productId);
+      
+      return true;
+    } catch (e) {
+      debugPrint("Error in deleteProduct: $e");
+      return false;
+    }
+  }
+
+  Future<bool> updateProduct(Product p) async {
+    try {
+      await supabase
+          .from('products')
+          .update(p.toJson())
+          .eq('id', p.id as Object);
+      return true;
+    } catch (e) {
+      debugPrint("Error in updateProduct: $e");
       return false;
     }
   }

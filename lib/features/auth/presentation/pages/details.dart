@@ -3,6 +3,7 @@ import 'package:woodyz/features/auth/presentation/widgets/details_widgets.dart';
 import 'package:woodyz/features/products/presentation/providers/products_provider.dart';
 import 'package:url_launcher/url_launcher.dart';
 import 'package:woodyz/features/auth/presentation/providers/auth_provider.dart';
+import 'package:woodyz/features/auth/presentation/pages/artisan/edit_product.dart';
 
 class Details extends StatefulWidget {
   final Product p;
@@ -71,12 +72,58 @@ class _DetailsState extends State<Details> {
     }
   }
 
+  Future<void> _deleteProduct() async {
+    final success = await ProductsProvider().deleteProduct(widget.p.id!);
+    if (success && mounted) {
+      Navigator.pop(context, true); // Return true to indicate deletion
+      ScaffoldMessenger.of(context).showSnackBar(
+        const SnackBar(content: Text("Product deleted successfully")),
+      );
+    } else if (mounted) {
+      ScaffoldMessenger.of(context).showSnackBar(
+        const SnackBar(content: Text("Failed to delete product")),
+      );
+    }
+  }
+
+  void _showDeleteConfirmation(BuildContext context) {
+    showDialog(
+      context: context,
+      builder: (context) => AlertDialog(
+        title: const Text("Delete Product", style: TextStyle(fontFamily: "Saira", fontWeight: FontWeight.bold)),
+        content: const Text("Are you sure you want to delete this creation? This action cannot be undone.", style: TextStyle(fontFamily: "Saira")),
+        actions: [
+          TextButton(
+            onPressed: () => Navigator.pop(context),
+            child: const Text("CANCEL", style: TextStyle(color: Colors.grey, fontFamily: "Saira")),
+          ),
+          TextButton(
+            onPressed: () {
+              Navigator.pop(context);
+              _deleteProduct();
+            },
+            child: const Text("DELETE", style: TextStyle(color: Colors.red, fontFamily: "Saira", fontWeight: FontWeight.bold)),
+          ),
+        ],
+      ),
+    );
+  }
+
   Future<void> _launchURL(String username) async {
     final Uri url = Uri.parse("https://instagram.com/$username");
     if (await canLaunchUrl(url)) {
       await launchUrl(url, mode: LaunchMode.externalApplication);
     } else {
       throw "Could not launch $url";
+    }
+  }
+
+  Color _getStatusColor(ProductStatus status) {
+    switch (status) {
+      case ProductStatus.inStock: return Colors.green;
+      case ProductStatus.onDemand: return Colors.blue;
+      case ProductStatus.inProduction: return Colors.orange;
+      case ProductStatus.unavailable: return Colors.red;
     }
   }
 
@@ -153,67 +200,85 @@ class _DetailsState extends State<Details> {
           onPressed: () => Navigator.pop(context), 
           icon: const Icon(Icons.arrow_back_ios_new, size: 20),
         ),
-        actions:(widget.asArtisan == true || widget.u == null) ? null :
-        [
-          IconButton(
-            onPressed: () async {
-              ProductsProvider productControl = ProductsProvider();
-
-              if (!_saved) {
-                bool success = await productControl.saveProduct(widget.p.id!, widget.u!.id);
-
-                if (!mounted) return;
-                if (success) {
-                  setState(() {
-                    _saved = true;
-                  });
-                  ScaffoldMessenger.of(context).showSnackBar(
-                    SnackBar(
-                      content: Row(
-                        mainAxisAlignment: MainAxisAlignment.center,
-                        children: [
-                          Icon(Icons.favorite, color: primaryColor),
-                          const SizedBox(width: 8),
-                          Text("Added to favorites!", style: TextStyle(color: primaryColor)),
-                        ],
-                      ),
-                      backgroundColor: theme.colorScheme.surface,
-                      showCloseIcon: true,
-                      closeIconColor: primaryColor,
-                      duration: const Duration(seconds: 4),
-                    ),
-                  );
+        actions: [
+          if (widget.asArtisan) ...[
+            IconButton(
+              onPressed: () async {
+                final result = await Navigator.push(
+                  context,
+                  MaterialPageRoute(builder: (context) => EditProduct(p: widget.p)),
+                );
+                if (result == true) {
+                  setState(() {}); // Refresh UI
                 }
-              } else {
-                bool success = await productControl.unsaveProduct(widget.p.id!, widget.u!.id);
+              },
+              icon: const Icon(Icons.edit_outlined),
+            ),
+            IconButton(
+              onPressed: () => _showDeleteConfirmation(context),
+              icon: const Icon(Icons.delete_outline, color: Colors.red),
+            ),
+          ]
+          else if (widget.u != null)
+            IconButton(
+              onPressed: () async {
+                ProductsProvider productControl = ProductsProvider();
 
-                if (!mounted) return;
+                if (!_saved) {
+                  bool success = await productControl.saveProduct(widget.p.id!, widget.u!.id);
 
-                if (success) {
-                  setState(() {
-                    _saved = false;
-                  });
-                  ScaffoldMessenger.of(context).showSnackBar(
-                    SnackBar(
-                      content: Row(
-                        mainAxisAlignment: MainAxisAlignment.center,
-                        children: [
-                          Icon(Icons.favorite_border_outlined, color: primaryColor),
-                          const SizedBox(width: 8),
-                          Text("Removed from favorites!", style: TextStyle(color: primaryColor)),
-                        ],
+                  if (!mounted) return;
+                  if (success) {
+                    setState(() {
+                      _saved = true;
+                    });
+                    ScaffoldMessenger.of(context).showSnackBar(
+                      SnackBar(
+                        content: Row(
+                          mainAxisAlignment: MainAxisAlignment.center,
+                          children: [
+                            Icon(Icons.favorite, color: primaryColor),
+                            const SizedBox(width: 8),
+                            Text("Added to favorites!", style: TextStyle(color: primaryColor)),
+                          ],
+                        ),
+                        backgroundColor: theme.colorScheme.surface,
+                        showCloseIcon: true,
+                        closeIconColor: primaryColor,
+                        duration: const Duration(seconds: 4),
                       ),
-                      backgroundColor: theme.colorScheme.surface,
-                      duration: const Duration(seconds: 4),
-                    ),
-                  );
+                    );
+                  }
+                } else {
+                  bool success = await productControl.unsaveProduct(widget.p.id!, widget.u!.id);
+
+                  if (!mounted) return;
+
+                  if (success) {
+                    setState(() {
+                      _saved = false;
+                    });
+                    ScaffoldMessenger.of(context).showSnackBar(
+                      SnackBar(
+                        content: Row(
+                          mainAxisAlignment: MainAxisAlignment.center,
+                          children: [
+                            Icon(Icons.favorite_border_outlined, color: primaryColor),
+                            const SizedBox(width: 8),
+                            Text("Removed from favorites!", style: TextStyle(color: primaryColor)),
+                          ],
+                        ),
+                        backgroundColor: theme.colorScheme.surface,
+                        duration: const Duration(seconds: 4),
+                      ),
+                    );
+                  }
                 }
-              }
-            },
-            icon: !_saved
-                ? const Icon(Icons.favorite_border_outlined)
-                : const Icon(Icons.favorite, color: Colors.red),
-          ),
+              },
+              icon: !_saved
+                  ? const Icon(Icons.favorite_border_outlined)
+                  : const Icon(Icons.favorite, color: Colors.red),
+            ),
         ],
       ),
       body: SingleChildScrollView(
@@ -589,6 +654,7 @@ class _DetailsState extends State<Details> {
                                 ),
                               ),
                               const SizedBox(height: 12),
+                              widget.asArtisan? SizedBox(height: 20,) :
                               ElevatedButton(
                                 onPressed: _submitReview,
                                 style: ElevatedButton.styleFrom(
@@ -619,27 +685,29 @@ class _DetailsState extends State<Details> {
                       ],
 
                       // Order Button
-                      ElevatedButton(
-                        onPressed: () => _launchURL(widget.a.instagram!),
-                        style: ElevatedButton.styleFrom(
-                          minimumSize: const Size(double.infinity, 60),
+                      if (!widget.asArtisan) ...[
+                        ElevatedButton(
+                          onPressed: () => _launchURL(widget.a.instagram!),
+                          style: ElevatedButton.styleFrom(
+                            minimumSize: const Size(double.infinity, 60),
+                          ),
+                          child: Row(
+                            mainAxisAlignment: MainAxisAlignment.center,
+                            children: [
+                              const ImageIcon(
+                                AssetImage('assets/icons/icons8-instagram-50.png'),
+                                size: 24,
+                              ),
+                              const SizedBox(width: 12),
+                              const Text(
+                                "REQUEST TO ORDER",
+                                style: TextStyle(letterSpacing: 1.5),
+                              ),
+                            ],
+                          ),
                         ),
-                        child: Row(
-                          mainAxisAlignment: MainAxisAlignment.center,
-                          children: [
-                            const ImageIcon(
-                              AssetImage('assets/icons/icons8-instagram-50.png'),
-                              size: 24,
-                            ),
-                            const SizedBox(width: 12),
-                            const Text(
-                              "REQUEST TO ORDER",
-                              style: TextStyle(letterSpacing: 1.5),
-                            ),
-                          ],
-                        ),
-                      ),
-                      const SizedBox(height: 40),
+                        const SizedBox(height: 40),
+                      ],
                     ]
                 )
             ),

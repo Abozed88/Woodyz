@@ -11,24 +11,27 @@ class Explore extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return SingleChildScrollView(
-      child: Center(
-        child: Column(
-          children: [
-            const SizedBox(height: 20,),
-            SearchCont(searchcontroller: _searchcontroller, u: u,),
-            const SizedBox(height: 10,),
-            Text(
+      child: Column(
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: [
+          const SizedBox(height: 24,),
+          Center(child: SearchCont(searchcontroller: _searchcontroller, u: u,)),
+          const SizedBox(height: 32,),
+          Padding(
+            padding: const EdgeInsets.symmetric(horizontal: 24.0),
+            child: Text(
               "Categories",
               style: TextStyle(
                 color: Theme.of(context).colorScheme.onSurface,
                 fontFamily: "Saira",
                 fontWeight: FontWeight.bold,
-                fontSize: 20,
+                fontSize: 22,
               ),
             ),
-            Categories(u: u,),
-          ],
-        ),
+          ),
+          Categories(u: u,),
+          const SizedBox(height: 20,),
+        ],
       ),
     );
   }

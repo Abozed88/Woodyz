@@ -232,6 +232,24 @@ class _UploadState extends State<Upload> {
               ChooseCategory(p: p),
               const SizedBox(height: 24),
 
+              ChooseStatus(p: p),
+              const SizedBox(height: 24),
+
+              const Text(
+                "Stock Quantity",
+                style: TextStyle(
+                  fontSize: 14,
+                  fontWeight: FontWeight.w500,
+                  fontFamily: "Saira",
+                ),
+              ),
+              const SizedBox(height: 8),
+              Center(child: StockIndicator(p: p)),
+              const SizedBox(height: 24),
+
+              AvailabilityToggle(p: p),
+              const SizedBox(height: 24),
+
               const Text(
                 "Set Price",
                 style: TextStyle(

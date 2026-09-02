@@ -1,7 +1,8 @@
-- `[x]` Update `Product` entity with `averageRating` and `ratingCount`
-- `[x]` Create `Review` entity
-- `[x]` Add `fetchReviews` and `addReview` to `ProductsProvider`
-- `[x]` Update `Details` page to display average rating and count
-- `[x]` Add Reviews section to `Details` page
-- `[x]` Implement Review submission form in `Details` page
-- `[x]` Verify implementation
+# Task - Product Management Enhancements
+
+- `[x]` Add `updateProduct` to `ProductsProvider`
+- `[x]` Create `StockIndicator` and `AvailabilityToggle` in `upload_widgets.dart`
+- `[x]` Update `Upload` page with stock and toggle
+- `[x]` Add Edit button to `Details` page
+- `[x]` Create `EditProduct` page UI and logic
+- `[x]` Verify all management flows
