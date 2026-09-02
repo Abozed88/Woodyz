@@ -45,6 +45,7 @@ class _ProfileState extends State<Profile> {
       setState(() {
         if (label == "Phone") u.phone = newValue;
         if (label == "Address") u.address = newValue;
+        if(label == "Instagram") u.instagram = newValue;
         if (label == "Bio") u.bio = newValue;
         if (label == "Location") u.location = newValue;
         if (label == "Skills") {
@@ -180,6 +181,8 @@ class _ProfileState extends State<Profile> {
                       _buildProfileRow(context, "Bio", u.bio ?? "N/A"),
                       const SizedBox(height: 15),
                       _buildProfileRow(context, "Address", u.address ?? "N/A"),
+                      const SizedBox(height: 15),
+                      _buildProfileRow(context, "Instagram", u.instagram ?? "N/A"),
                       const SizedBox(height: 15),
                       Row(
                         mainAxisAlignment: MainAxisAlignment.spaceBetween,

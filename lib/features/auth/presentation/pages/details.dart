@@ -620,7 +620,7 @@ class _DetailsState extends State<Details> {
 
                       // Order Button
                       ElevatedButton(
-                        onPressed: () => _launchURL(widget.a.username),
+                        onPressed: () => _launchURL(widget.a.instagram!),
                         style: ElevatedButton.styleFrom(
                           minimumSize: const Size(double.infinity, 60),
                         ),

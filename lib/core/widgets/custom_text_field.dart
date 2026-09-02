@@ -102,6 +102,12 @@ class _CustomTextFieldState extends State<CustomTextField> {
                 return "Enter a valid phone number";
               }
             }
+
+            if (widget.label == "Instagram Username") {
+              if(value.length > 30 || value.contains('!') || value.contains('@') || value.contains('#') || value.contains('&')){
+                return "Enter a valid Instagram username";
+              }
+            }
             return null;
           },
         ),
@@ -120,7 +126,7 @@ class _CustomTextFieldState extends State<CustomTextField> {
     if (widget.hint == "phone") return Icon(Icons.phone_android_outlined, color: iconColor, size: iconSize);
     if (widget.hint == "address") return Icon(Icons.location_on_outlined, color: iconColor, size: iconSize);
     if (widget.hint == "shop") return Icon(Icons.store_outlined, color: iconColor, size: iconSize);
-    if (widget.hint == "link") return Icon(Icons.link_outlined, color: iconColor, size: iconSize);
+    if (widget.label == "Instagram Username") return Icon(Icons.link_outlined, color: iconColor, size: iconSize);
     if (widget.hint.contains("describe")) return Icon(Icons.description_outlined, color: iconColor, size: iconSize);
     
     return null;

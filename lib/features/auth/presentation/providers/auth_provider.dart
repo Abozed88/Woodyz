@@ -214,6 +214,8 @@ class AuthProvider {
         // Assume skills is a comma separated string when editing
         final List<String> skillsList = value.split(',').map((s) => s.trim()).toList();
         await supabase.from('artisans').update({'skills': skillsList}).eq('id', userId);
+      } else if (field == 'instagram') {
+        await supabase.from('artisans').update({'insta_username': value}).eq('id', userId);
       } else {
         return false;
       }

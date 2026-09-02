@@ -77,7 +77,7 @@ class ArtisanView extends StatelessWidget {
                         child: TextButton.icon(
                           label: const Text("CONTACT VIA INSTAGRAM", style: TextStyle(fontSize: 18, fontFamily: "Saira")), 
                           onPressed: () {
-                            _launchURL(artisan.username);
+                            _launchURL(artisan.instagram!);
                           },
                           style: ElevatedButton.styleFrom(
                             backgroundColor: theme.colorScheme.primary,

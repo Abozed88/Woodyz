@@ -27,6 +27,7 @@ class _SignupArtState extends State<SignupArt> {
 
   final TextEditingController _bioController = TextEditingController();
   final TextEditingController _addressController = TextEditingController();
+  final TextEditingController _instaController = TextEditingController();
 
   final List<String> _skillsList = [
     "Furniture", "Decor", "Bedroom", "Bowls", "Kitchenware", "Outdoor", "Art", "Toys", "Others",];
@@ -190,6 +191,13 @@ class _SignupArtState extends State<SignupArt> {
                                   crossAxisAlignment: CrossAxisAlignment.stretch,
                                   children: [
                                     CustomTextField(
+                                      label: "Instagram Username",
+                                      hint: "your instagram username, so customers contact you",
+                                      controller: _instaController,
+                                    ),
+                                    const SizedBox(height: 24),
+
+                                    CustomTextField(
                                       label: "Bio",
                                       hint: "Tell us about yourself and your craft",
                                       controller: _bioController,
@@ -315,6 +323,7 @@ class _SignupArtState extends State<SignupArt> {
       try {
         final artisanData = {
           'bio': _bioController.text.trim(),
+          'insta_username': _instaController.text.trim(),
           'address': _addressController.text.trim(),
           'skills': _selectedSkills,
           'rating': 0.0,

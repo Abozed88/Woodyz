@@ -89,6 +89,7 @@ class Customer extends User {
 class Artisan extends User {
   List<String> skills;
   double rating;
+  String? instagram;
 
   Artisan({
     required super.id,
@@ -101,6 +102,7 @@ class Artisan extends User {
     this.skills = const [],
     super.address,
     this.rating = 0.0,
+    this.instagram,
   }) : super(role: 'artisan');
 
   factory Artisan.fromProfile(User profile, {
@@ -108,6 +110,7 @@ class Artisan extends User {
     List<String> skills = const [],
     String? address,
     double rating = 0.0,
+    String? instagram
   }) {
     return Artisan(
       id: profile.id,
@@ -120,6 +123,7 @@ class Artisan extends User {
       skills: skills,
       address: address ?? profile.address,
       rating: rating,
+      instagram: instagram
     );
   }
 
@@ -134,6 +138,7 @@ class Artisan extends User {
       skills: artisanData?['skills'] != null ? List<String>.from(artisanData['skills']) : [],
       address: artisanData?['address'],
       rating: (artisanData?['rating'] ?? 0.0).toDouble(),
+      instagram: (artisanData?['insta_username'])
     );
   }
 
@@ -144,11 +149,12 @@ class Artisan extends User {
       'skills': skills,
       'address': address,
       'rating': rating,
+      'insta_username' : instagram
     };
   }
 
   @override
   String toString() {
-    return 'Artisan(id: $id, username: $username, fullName: $fullName, avatarUrl: $avatarUrl, rating: $rating, bio: $bio, skills: $skills, location: $location)';
+    return 'Artisan(id: $id, username: $username, fullName: $fullName, instagram: $instagram, avatarUrl: $avatarUrl, rating: $rating, bio: $bio, skills: $skills, location: $location)';
   }
 }
