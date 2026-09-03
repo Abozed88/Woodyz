@@ -4,6 +4,7 @@ import 'package:woodyz/features/products/presentation/providers/products_provide
 import 'package:url_launcher/url_launcher.dart';
 import 'package:woodyz/features/auth/presentation/providers/auth_provider.dart';
 import 'package:woodyz/features/auth/presentation/pages/artisan/edit_product.dart';
+import 'package:lottie/lottie.dart';
 
 class Details extends StatefulWidget {
   final Product p;
@@ -220,64 +221,74 @@ class _DetailsState extends State<Details> {
             ),
           ]
           else if (widget.u != null)
-            IconButton(
-              onPressed: () async {
-                ProductsProvider productControl = ProductsProvider();
+            Padding(
+              padding: const EdgeInsets.only(right: 12.0),
+              child: BouncingIconButton(
+                onPressed: () async {
+                  final ProductsProvider productControl = ProductsProvider();
+                  final bool wasSaved = _saved;
 
-                if (!_saved) {
-                  bool success = await productControl.saveProduct(widget.p.id!, widget.u!.id);
+                  // Optimistic UI update
+                  setState(() {
+                    _saved = !wasSaved;
+                  });
 
-                  if (!mounted) return;
-                  if (success) {
+                  bool success = false;
+                  if (!wasSaved) {
+                    success = await productControl.saveProduct(widget.p.id!, widget.u!.id);
+                    if (success && mounted) {
+                      ScaffoldMessenger.of(context).showSnackBar(
+                        SnackBar(
+                          content: Row(
+                            mainAxisAlignment: MainAxisAlignment.center,
+                            children: [
+                              Icon(Icons.favorite, color: primaryColor),
+                              const SizedBox(width: 8),
+                              Text("Added to favorites!", style: TextStyle(color: primaryColor)),
+                            ],
+                          ),
+                          backgroundColor: theme.colorScheme.surface,
+                          showCloseIcon: true,
+                          closeIconColor: primaryColor,
+                          duration: const Duration(seconds: 4),
+                        ),
+                      );
+                    }
+                  } else {
+                    success = await productControl.unsaveProduct(widget.p.id!, widget.u!.id);
+                    if (success && mounted) {
+                      ScaffoldMessenger.of(context).showSnackBar(
+                        SnackBar(
+                          content: Row(
+                            mainAxisAlignment: MainAxisAlignment.center,
+                            children: [
+                              Icon(Icons.favorite_border_outlined, color: primaryColor),
+                              const SizedBox(width: 8),
+                              Text("Removed from favorites!", style: TextStyle(color: primaryColor)),
+                            ],
+                          ),
+                          backgroundColor: theme.colorScheme.surface,
+                          duration: const Duration(seconds: 4),
+                        ),
+                      );
+                    }
+                  }
+
+                  // If failed, revert the state
+                  if (!success && mounted) {
                     setState(() {
-                      _saved = true;
+                      _saved = wasSaved;
                     });
                     ScaffoldMessenger.of(context).showSnackBar(
-                      SnackBar(
-                        content: Row(
-                          mainAxisAlignment: MainAxisAlignment.center,
-                          children: [
-                            Icon(Icons.favorite, color: primaryColor),
-                            const SizedBox(width: 8),
-                            Text("Added to favorites!", style: TextStyle(color: primaryColor)),
-                          ],
-                        ),
-                        backgroundColor: theme.colorScheme.surface,
-                        showCloseIcon: true,
-                        closeIconColor: primaryColor,
-                        duration: const Duration(seconds: 4),
-                      ),
+                      const SnackBar(content: Text("Failed to update favorites.")),
                     );
                   }
-                } else {
-                  bool success = await productControl.unsaveProduct(widget.p.id!, widget.u!.id);
-
-                  if (!mounted) return;
-
-                  if (success) {
-                    setState(() {
-                      _saved = false;
-                    });
-                    ScaffoldMessenger.of(context).showSnackBar(
-                      SnackBar(
-                        content: Row(
-                          mainAxisAlignment: MainAxisAlignment.center,
-                          children: [
-                            Icon(Icons.favorite_border_outlined, color: primaryColor),
-                            const SizedBox(width: 8),
-                            Text("Removed from favorites!", style: TextStyle(color: primaryColor)),
-                          ],
-                        ),
-                        backgroundColor: theme.colorScheme.surface,
-                        duration: const Duration(seconds: 4),
-                      ),
-                    );
-                  }
-                }
-              },
-              icon: !_saved
-                  ? const Icon(Icons.favorite_border_outlined)
-                  : const Icon(Icons.favorite, color: Colors.red),
+                },
+                icon: !_saved
+                    ? Icons.favorite_border_outlined
+                    : Icons.favorite,
+                color: _saved ? Colors.red : theme.iconTheme.color,
+              ),
             ),
         ],
       ),
@@ -571,7 +582,7 @@ class _DetailsState extends State<Details> {
                       const SizedBox(height: 16),
                       
                       if (_isLoadingReviews)
-                        const Center(child: CircularProgressIndicator())
+                        Center(child: Lottie.asset('assets/animations/progressloading.json', height: 80))
                       else if (_reviews.isEmpty)
                         Center(
                           child: Padding(
@@ -623,15 +634,14 @@ class _DetailsState extends State<Details> {
                             children: [
                               Row(
                                 children: List.generate(5, (index) {
-                                  return IconButton(
-                                    onPressed: () => setState(() => _userRating = index + 1.0),
-                                    icon: Icon(
-                                      index < _userRating ? Icons.star_rounded : Icons.star_outline_rounded,
+                                  return Padding(
+                                    padding: const EdgeInsets.symmetric(horizontal: 10.0),
+                                    child: BouncingIconButton(
+                                      onPressed: () => setState(() => _userRating = index + 1.0),
+                                      icon: index < _userRating ? Icons.star_rounded : Icons.star_outline_rounded,
                                       color: primaryColor,
                                       size: 32,
                                     ),
-                                    padding: EdgeInsets.zero,
-                                    constraints: const BoxConstraints(),
                                   );
                                 }),
                               ),
@@ -740,7 +750,7 @@ class FullScreenImage extends StatelessWidget {
                   fit: BoxFit.contain,
                   loadingBuilder: (context, child, loadingProgress) {
                     if (loadingProgress == null) return child;
-                    return const Center(child: CircularProgressIndicator(color: Colors.white));
+                    return Center(child: Lottie.asset('assets/animations/progressloading.json', height: 100));
                   },
                 ),
               ),

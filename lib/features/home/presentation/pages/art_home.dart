@@ -15,6 +15,19 @@ class Arthome extends StatefulWidget {
 class _ArthomeState extends State<Arthome> {
 
   int _selectedIndex = 0;
+  late PageController _pageController;
+
+  @override
+  void initState() {
+    super.initState();
+    _pageController = PageController(initialPage: _selectedIndex);
+  }
+
+  @override
+  void dispose() {
+    _pageController.dispose();
+    super.dispose();
+  }
 
   List<Widget> get _screens => [
     Homescreen(artisan: widget.artisan,),
@@ -24,9 +37,11 @@ class _ArthomeState extends State<Arthome> {
 
 
   void _onItemTapped(int index) {
-    setState(() {
-      _selectedIndex = index;
-    });
+    _pageController.animateToPage(
+      index,
+      duration: const Duration(milliseconds: 300),
+      curve: Curves.easeInOut,
+    );
   }
 
 
@@ -46,7 +61,15 @@ class _ArthomeState extends State<Arthome> {
           ),
         ),
       ),
-      body: _screens[_selectedIndex],
+      body: PageView(
+        controller: _pageController,
+        onPageChanged: (index) {
+          setState(() {
+            _selectedIndex = index;
+          });
+        },
+        children: _screens,
+      ),
       bottomNavigationBar: BottomNavigationBar(
         type: BottomNavigationBarType.fixed,
         backgroundColor: theme.colorScheme.surface,

@@ -1,5 +1,6 @@
 import 'dart:io';
 import 'package:flutter/material.dart';
+import 'package:lottie/lottie.dart';
 import 'package:woodyz/features/auth/presentation/widgets/upload_widgets.dart';
 import 'package:woodyz/features/auth/presentation/providers/auth_provider.dart';
 import 'package:image_picker/image_picker.dart';
@@ -268,14 +269,7 @@ class _UploadState extends State<Upload> {
                   minimumSize: const Size(double.infinity, 60),
                 ),
                 child: _isUploading
-                    ? SizedBox(
-                        height: 24,
-                        width: 24,
-                        child: CircularProgressIndicator(
-                          strokeWidth: 3,
-                          valueColor: AlwaysStoppedAnimation<Color>(theme.colorScheme.onPrimary),
-                        ),
-                      )
+                    ? Lottie.asset('assets/animations/progressloading.json', height: 40)
                     : const Text(
                         "UPLOAD PRODUCT",
                         style: TextStyle(letterSpacing: 1.5),
@@ -307,7 +301,12 @@ class _UploadState extends State<Upload> {
         final newProduct = await ProductsProvider().addProduct(p, _image, _additionalImages);
         if(newProduct != null && mounted){
           ScaffoldMessenger.of(context).showSnackBar(
-            const SnackBar(content: Text("Product uploaded successfully!")),
+            SnackBar(content: Row(
+              children: [
+                Text("Product uploaded successfully!"),
+                Lottie.asset('assets/animations/Check Mark - Success.json')
+              ],
+            )),
           );
           reset();
         }

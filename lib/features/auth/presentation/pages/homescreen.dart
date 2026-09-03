@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:lottie/lottie.dart';
 import 'package:woodyz/features/auth/presentation/widgets/home_widgets.dart';
 import 'package:woodyz/features/auth/presentation/providers/auth_provider.dart';
 import 'package:woodyz/features/products/presentation/providers/products_provider.dart';
@@ -8,7 +9,10 @@ class Homescreen extends StatefulWidget {
   final Artisan? artisan;
   final String category;
   final String? query;
-  const Homescreen({super.key,this.c, this.artisan,this.category = "all", this.query,});
+  final double? minPrice;
+  final double? maxPrice;
+  final String? location;
+  const Homescreen({super.key,this.c, this.artisan,this.category = "all", this.query, this.minPrice, this.maxPrice, this.location});
 
   @override
   State<Homescreen> createState() => _HomescreenState();
@@ -42,7 +46,11 @@ class _HomescreenState extends State<Homescreen> {
     if (isLoading) return;
     setState(() => isLoading = true);
 
-    List<Product> newItems = await ProductsProvider().fetchData(page, limit, widget.category, widget.query, widget.artisan?.id);
+    List<Product> newItems = await ProductsProvider().fetchData(
+        page, limit, widget.category, widget.query, widget.artisan?.id,
+        minPrice: widget.minPrice,
+        maxPrice: widget.maxPrice,
+        location: widget.location);
     if (mounted) {
       if (newItems.isEmpty) {
         setState(() {
@@ -75,24 +83,35 @@ class _HomescreenState extends State<Homescreen> {
       children: [
         Products(scrollController: _scrollController, items: items, u: widget.c, a: widget.artisan,),
         if (isLoading)
-          const Padding(
-            padding: EdgeInsets.all(8.0),
+          Padding(
+            padding: const EdgeInsets.all(8.0),
             child: Center(
-              child: CircularProgressIndicator(
-                color: Color.fromRGBO(252, 184, 25, 1),
+              child: SizedBox(
+                height: 60,
+                child: Lottie.asset('assets/animations/progressloading.json'),
               ),
             ),
           ),
       ],
     ):
         Center(
-          child: Text(
-            "No products found",
-            style: TextStyle(
-              color: Theme.of(context).colorScheme.onSurface.withOpacity(0.5),
-              fontSize: 20,
-              fontFamily: "Saira",
-            ),
+          child: Row(
+            mainAxisAlignment: MainAxisAlignment.center,
+            children: [
+              SizedBox(
+                height: 80,
+                width: 80,
+                child: Lottie.asset('assets/animations/No data found.json')
+              ),
+              Text(
+                "No products found",
+                style: TextStyle(
+                  color: Theme.of(context).colorScheme.onSurface.withOpacity(0.5),
+                  fontSize: 20,
+                  fontFamily: "Saira",
+                ),
+              ),
+            ],
           ),
         );
   }

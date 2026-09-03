@@ -4,6 +4,7 @@ import 'package:woodyz/core/theme/app_theme.dart';
 import 'package:woodyz/core/widgets/custom_text_field.dart';
 import 'package:image_picker/image_picker.dart';
 import 'package:woodyz/features/auth/presentation/providers/auth_provider.dart';
+import 'package:lottie/lottie.dart';
 
 import '../../../../core/theme/app_colors.dart';
 
@@ -210,14 +211,7 @@ class _SignupCustState extends State<SignupCust> {
                                         elevation: 4,
                                       ),
                                       child: _isSigningUp
-                                          ? SizedBox(
-                                              height: 24,
-                                              width: 24,
-                                              child: CircularProgressIndicator(
-                                                strokeWidth: 3,
-                                                valueColor: AlwaysStoppedAnimation<Color>(theme.colorScheme.onPrimary),
-                                              ),
-                                            )
+                                          ? Lottie.asset('assets/animations/progressloading.json', height: 40)
                                           : Text(
                                               "CREATE ACCOUNT",
                                               style: TextStyle(

@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:woodyz/features/products/presentation/providers/products_provider.dart';
 import 'package:woodyz/features/auth/presentation/widgets/upload_widgets.dart';
 import 'package:woodyz/core/widgets/custom_text_field.dart';
+import 'package:lottie/lottie.dart';
 
 class EditProduct extends StatefulWidget {
   final Product p;
@@ -114,7 +115,7 @@ class _EditProductState extends State<EditProduct> {
                   minimumSize: const Size(double.infinity, 60),
                 ),
                 child: _isSaving
-                    ? const SizedBox(height: 24, width: 24, child: CircularProgressIndicator(strokeWidth: 3, color: Colors.white))
+                    ? Lottie.asset('assets/animations/progressloading.json', height: 40)
                     : const Text("SAVE CHANGES", style: TextStyle(letterSpacing: 1.5)),
               ),
               const SizedBox(height: 40),

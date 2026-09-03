@@ -12,11 +12,11 @@ final supabase = sb.Supabase.instance.client;
 
 class ProductsProvider {
   Future<List<Product>> fetchData(int page, int limit, String category,
-      String? query, String? artisanId) async {
+      String? query, String? artisanId, {double? minPrice, double? maxPrice, String? location}) async {
     try {
       var request = supabase
           .from('products')
-          .select('*, product_images(*)')
+          .select('*, product_images(*), profiles!inner(location)')
           .neq('availability', 'Unavailable');
 
       if (category != "all") {
@@ -29,6 +29,18 @@ class ProductsProvider {
 
       if (artisanId != null && artisanId.isNotEmpty) {
         request = request.eq('artisan_id', artisanId);
+      }
+
+      if (minPrice != null) {
+        request = request.gte('price', minPrice);
+      }
+
+      if (maxPrice != null) {
+        request = request.lte('price', maxPrice);
+      }
+
+      if (location != null && location != "Any") {
+        request = request.eq('profiles.location', location);
       }
 
       final response = await request

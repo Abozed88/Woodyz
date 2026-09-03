@@ -16,6 +16,32 @@ class Explore extends StatelessWidget {
         children: [
           const SizedBox(height: 24,),
           Center(child: SearchCont(searchcontroller: _searchcontroller, u: u,)),
+          const SizedBox(height: 12,),
+          Padding(
+            padding: const EdgeInsets.symmetric(horizontal: 24.0),
+            child: OutlinedButton.icon(
+              onPressed: () {
+                showDialog(
+                  context: context,
+                  builder: (context) => FilterDialog(u: u),
+                );
+              },
+              icon: const Icon(Icons.filter_list, color: Color.fromRGBO(252, 184, 25, 1)),
+              label: const Text(
+                "Search by Filters",
+                style: TextStyle(
+                  color: Color.fromRGBO(252, 184, 25, 1),
+                  fontFamily: "Saira",
+                  fontWeight: FontWeight.bold,
+                ),
+              ),
+              style: OutlinedButton.styleFrom(
+                side: const BorderSide(color: Color.fromRGBO(252, 184, 25, 1), width: 1.5),
+                shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
+                padding: const EdgeInsets.symmetric(horizontal: 20, vertical: 12),
+              ),
+            ),
+          ),
           const SizedBox(height: 32,),
           Padding(
             padding: const EdgeInsets.symmetric(horizontal: 24.0),

@@ -4,6 +4,7 @@ import 'package:woodyz/core/theme/app_theme.dart';
 import 'package:woodyz/core/widgets/custom_text_field.dart';
 import 'package:woodyz/features/auth/presentation/providers/auth_provider.dart';
 import 'package:woodyz/features/auth/presentation/pages/signup.dart';
+import 'package:lottie/lottie.dart';
 
 class Login extends StatefulWidget {
   const Login({super.key});
@@ -70,7 +71,7 @@ class _LoginState extends State<Login> {
           if (_isLoading) {
             return Scaffold(
               backgroundColor: theme.scaffoldBackgroundColor,
-              body: Center(child: CircularProgressIndicator(color: theme.colorScheme.primary)),
+              body: Center(child: Lottie.asset('assets/animations/progressloading.json')),
             );
           }
 
@@ -200,14 +201,7 @@ class _LoginState extends State<Login> {
                                           foregroundColor: theme.colorScheme.onPrimary,
                                         ),
                                         child: _isLoggingIn
-                                            ? SizedBox(
-                                                height: 20,
-                                                width: 20,
-                                                child: CircularProgressIndicator(
-                                                  strokeWidth: 2,
-                                                  valueColor: AlwaysStoppedAnimation<Color>(theme.colorScheme.onPrimary),
-                                                ),
-                                              )
+                                            ? Lottie.asset('assets/animations/progressloading.json', height: 40)
                                             : const Text(
                                                 "LOG IN",
                                                 style: TextStyle(

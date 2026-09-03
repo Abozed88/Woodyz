@@ -211,3 +211,69 @@ class Widget2 extends StatelessWidget {
     );
   }
 }
+
+class BouncingIconButton extends StatefulWidget {
+  final IconData icon;
+  final Color? color;
+  final double size;
+  final VoidCallback onPressed;
+
+  const BouncingIconButton({
+    super.key,
+    required this.icon,
+    this.color,
+    this.size = 24.0,
+    required this.onPressed,
+  });
+
+  @override
+  State<BouncingIconButton> createState() => _BouncingIconButtonState();
+}
+
+class _BouncingIconButtonState extends State<BouncingIconButton> with SingleTickerProviderStateMixin {
+  late AnimationController _controller;
+  late Animation<double> _scaleAnimation;
+
+  @override
+  void initState() {
+    super.initState();
+    _controller = AnimationController(
+      vsync: this,
+      duration: const Duration(milliseconds: 150),
+    );
+    _scaleAnimation = TweenSequence<double>([
+      TweenSequenceItem(
+        tween: Tween<double>(begin: 1.0, end: 1.5).chain(CurveTween(curve: Curves.easeOut)),
+        weight: 50,
+      ),
+      TweenSequenceItem(
+        tween: Tween<double>(begin: 1.5, end: 1.0).chain(CurveTween(curve: Curves.easeIn)),
+        weight: 50,
+      ),
+    ]).animate(_controller);
+  }
+
+  @override
+  void dispose() {
+    _controller.dispose();
+    super.dispose();
+  }
+
+  @override
+  Widget build(BuildContext context) {
+    return GestureDetector(
+      onTap: () {
+        _controller.forward(from: 0.0);
+        widget.onPressed();
+      },
+      child: ScaleTransition(
+        scale: _scaleAnimation,
+        child: Icon(
+          widget.icon,
+          color: widget.color,
+          size: widget.size,
+        ),
+      ),
+    );
+  }
+}

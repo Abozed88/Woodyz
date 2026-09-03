@@ -4,6 +4,7 @@ import 'package:woodyz/features/auth/presentation/providers/auth_provider.dart';
 import 'package:woodyz/features/auth/presentation/pages/settings.dart';
 import 'package:image_picker/image_picker.dart';
 import 'dart:io';
+import 'package:lottie/lottie.dart';
 
 class Profile extends StatefulWidget {
   final Customer? c;
@@ -125,8 +126,8 @@ class _ProfileState extends State<Profile> {
                                 shape: BoxShape.circle,
                                 color: Colors.black26,
                               ),
-                              child: const Center(
-                                child: CircularProgressIndicator(color: Colors.white),
+                              child: Center(
+                                child: Lottie.asset('assets/animations/progressloading.json', height: 60),
                               ),
                             ),
                           ),
@@ -365,7 +366,7 @@ class _ProfileState extends State<Profile> {
             },
             icon: isEditing 
               ? (_isUpdating 
-                  ? const SizedBox(width: 18, height: 18, child: CircularProgressIndicator(strokeWidth: 2, color: Colors.yellow)) 
+                  ? Lottie.asset('assets/animations/progressloading.json', height: 30) 
                   : const Icon(Icons.check_circle, color: Colors.yellow, size: 20))
               : Icon(Icons.edit, color: theme.colorScheme.onSurface.withOpacity(0.5), size: 18),
             constraints: const BoxConstraints(),
