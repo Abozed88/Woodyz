@@ -85,47 +85,9 @@ const List<(String, Icon)> categories = [("all" , Icon(Icons.all_inclusive, colo
   ("Toys", Icon(Icons.toys, color: color)),("Others", Icon(Icons.inventory, color: color))
 ];
 
-class Categories extends StatefulWidget {
+class Categories extends StatelessWidget {
   final Customer u;
   const Categories({super.key, required this.u});
-
-  @override
-  State<Categories> createState() => _CategoriesState();
-}
-
-class _CategoriesState extends State<Categories> {
-  late ScrollController _scrollController;
-
-  @override
-  void initState() {
-    super.initState();
-    _scrollController = ScrollController();
-    WidgetsBinding.instance.addPostFrameCallback((_) => _startScrolling());
-  }
-
-  void _startScrolling() {
-    if (_scrollController.hasClients) {
-      final maxScrollExtent = _scrollController.position.maxScrollExtent;
-      final duration = Duration(seconds: (maxScrollExtent / 8).round()); // Even slower motion
-
-      _scrollController.animateTo(
-        maxScrollExtent,
-        duration: duration,
-        curve: Curves.linear,
-      ).then((_) {
-        if (mounted) {
-          _scrollController.jumpTo(0);
-          _startScrolling();
-        }
-      });
-    }
-  }
-
-  @override
-  void dispose() {
-    _scrollController.dispose();
-    super.dispose();
-  }
 
   @override
   Widget build(BuildContext context) {
@@ -153,61 +115,55 @@ class _CategoriesState extends State<Categories> {
         },
         blendMode: BlendMode.dstIn,
         child: ListView.builder(
-          controller: _scrollController,
-          physics: const BouncingScrollPhysics(), // Better feel for interaction
           padding: const EdgeInsets.symmetric(horizontal: 20),
           scrollDirection: Axis.horizontal,
           itemCount: categories.length,
           itemBuilder: (context, i) {
             return Padding(
               padding: const EdgeInsets.only(right: 12.0),
-              child: Material( // Added Material to ensure InkWell works perfectly
-                color: Colors.transparent,
-                child: InkWell(
-                  onTap: () {
-                    debugPrint("Category ${categories[i].$1} pressed");
-                    Navigator.push(context, MaterialPageRoute(builder: (context)=>Category(u: widget.u, category: categories[i].$1)));
-                  },
-                  borderRadius: BorderRadius.circular(16),
-                  child: Column(
-                    mainAxisAlignment: MainAxisAlignment.center,
-                    children: [
-                      Container(
-                        height: 64,
-                        width: 64,
-                        decoration: BoxDecoration(
-                          borderRadius: BorderRadius.circular(16),
-                          color: isDark ? const Color(0xFF2E2E2D) : Colors.white,
-                          border: Border.all(
-                            width: 1.2,
-                            color: color.withOpacity(0.4),
-                          ),
-                          boxShadow: isDark ? [] : [
-                            BoxShadow(
-                              color: Colors.black.withOpacity(0.04),
-                              blurRadius: 8,
-                              offset: const Offset(0, 4),
-                            )
-                          ],
+              child: InkWell(
+                onTap: () {
+                  Navigator.push(context, MaterialPageRoute(builder: (context)=>Category(u: u, category: categories[i].$1)));
+                },
+                borderRadius: BorderRadius.circular(16),
+                child: Column(
+                  mainAxisAlignment: MainAxisAlignment.center,
+                  children: [
+                    Container(
+                      height: 64,
+                      width: 64,
+                      decoration: BoxDecoration(
+                        borderRadius: BorderRadius.circular(16),
+                        color: isDark ? const Color(0xFF2E2E2D) : Colors.white,
+                        border: Border.all(
+                          width: 1.2,
+                          color: color.withOpacity(0.4),
                         ),
-                        child: Icon(
-                          categories[i].$2.icon,
-                          color: color,
-                          size: 28,
-                        ),
+                        boxShadow: isDark ? [] : [
+                          BoxShadow(
+                            color: Colors.black.withOpacity(0.04),
+                            blurRadius: 8,
+                            offset: const Offset(0, 4),
+                          )
+                        ],
                       ),
-                      const SizedBox(height: 8),
-                      Text(
-                        categories[i].$1,
-                        style: TextStyle(
-                          color: theme.colorScheme.onSurface, 
-                          fontSize: 12,
-                          fontWeight: FontWeight.w500,
-                          fontFamily: "Saira",
-                        ),
-                      )
-                    ],
-                  ),
+                      child: Icon(
+                        categories[i].$2.icon,
+                        color: color,
+                        size: 28,
+                      ),
+                    ),
+                    const SizedBox(height: 8),
+                    Text(
+                      categories[i].$1,
+                      style: TextStyle(
+                        color: theme.colorScheme.onSurface, 
+                        fontSize: 12,
+                        fontWeight: FontWeight.w500,
+                        fontFamily: "Saira",
+                      ),
+                    )
+                  ],
                 ),
               ),
             );

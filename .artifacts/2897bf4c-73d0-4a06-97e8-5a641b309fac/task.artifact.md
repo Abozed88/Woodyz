@@ -1,4 +1,0 @@
-- [x] Refactor `User` and `Artisan` JSON methods to prevent schema conflicts
-- [x] Update `AuthProvider.signUp` to separate `profiles` and `artisans` data correctly
-- [x] Add diagnostic logging to `AuthProvider.login` for data verification
-- [x] Verify artisan data retrieval in `login.dart`

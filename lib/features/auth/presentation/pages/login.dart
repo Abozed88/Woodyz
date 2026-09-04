@@ -1,10 +1,13 @@
 import 'dart:ui';
 import 'package:flutter/material.dart';
+import 'package:supabase_flutter/supabase_flutter.dart' hide User;
 import 'package:woodyz/core/theme/app_theme.dart';
 import 'package:woodyz/core/widgets/custom_text_field.dart';
 import 'package:woodyz/features/auth/presentation/providers/auth_provider.dart';
 import 'package:woodyz/features/auth/presentation/pages/signup.dart';
+import 'package:woodyz/features/auth/presentation/pages/change_password.dart';
 import 'package:lottie/lottie.dart';
+import 'dart:async';
 
 class Login extends StatefulWidget {
   const Login({super.key});
@@ -17,13 +20,29 @@ class _LoginState extends State<Login> {
   final GlobalKey<FormState> _key = GlobalKey();
   final TextEditingController _emailcontroller = TextEditingController();
   final TextEditingController _passcontroller = TextEditingController();
+  final TextEditingController _resetEmailController = TextEditingController();
   bool _isLoading = true;
   bool _isLoggingIn = false;
+  late final StreamSubscription<AuthState> _authSubscription;
 
   @override
   void initState() {
     super.initState();
     _checkLoginStatus();
+    _setupAuthListener();
+  }
+
+  void _setupAuthListener() {
+    _authSubscription = supabase.auth.onAuthStateChange.listen((data) {
+      if (data.event == AuthChangeEvent.passwordRecovery) {
+        if (mounted) {
+          Navigator.push(
+            context,
+            MaterialPageRoute(builder: (context) => const ChangePassword()),
+          );
+        }
+      }
+    });
   }
 
   Future<void> _checkLoginStatus() async {
@@ -58,6 +77,91 @@ class _LoginState extends State<Login> {
         });
       }
     }
+  }
+
+  @override
+  void dispose() {
+    _authSubscription.cancel();
+    _emailcontroller.dispose();
+    _passcontroller.dispose();
+    _resetEmailController.dispose();
+    super.dispose();
+  }
+
+  void _showForgotPasswordDialog() {
+    final theme = Theme.of(context);
+
+    showDialog(
+      context: context,
+      builder: (context) => AlertDialog(
+        backgroundColor: theme.colorScheme.surface,
+        shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(20)),
+        title: const Text(
+          "Reset Password",
+          style: TextStyle(fontFamily: "Saira", fontWeight: FontWeight.bold),
+        ),
+        content: Column(
+          mainAxisSize: MainAxisSize.min,
+          crossAxisAlignment: CrossAxisAlignment.start,
+          children: [
+            Text(
+              "Enter your email address to receive a password reset link.",
+              style: TextStyle(
+                fontFamily: "Saira",
+                color: theme.colorScheme.onSurface.withValues(alpha: 0.7),
+              ),
+            ),
+            const SizedBox(height: 20),
+            CustomTextField(
+              label: "Email Address",
+              hint: "you@gmail.com",
+              controller: _resetEmailController,
+              keyboardType: TextInputType.emailAddress,
+            ),
+          ],
+        ),
+        actions: [
+          TextButton(
+            onPressed: () => Navigator.pop(context),
+            child: Text(
+              "CANCEL",
+              style: TextStyle(color: theme.colorScheme.onSurface.withValues(alpha: 0.5), fontFamily: "Saira"),
+            ),
+          ),
+          ElevatedButton(
+            onPressed: () async {
+              final email = _resetEmailController.text.trim();
+              if (email.isEmpty) {
+                ScaffoldMessenger.of(context).showSnackBar(
+                  const SnackBar(content: Text("Please enter your email")),
+                );
+                return;
+              }
+
+              Navigator.pop(context);
+              
+              final success = await AuthProvider(context: context).resetPassword(email);
+
+              if (context.mounted) {
+                if (success) {
+                  ScaffoldMessenger.of(context).showSnackBar(
+                    const SnackBar(content: Text("Password reset link sent! Check your email.")),
+                  );
+                } else {
+                  ScaffoldMessenger.of(context).showSnackBar(
+                    const SnackBar(content: Text("Failed to send reset link. Please try again.")),
+                  );
+                }
+              }
+            },
+            style: ElevatedButton.styleFrom(
+              padding: const EdgeInsets.symmetric(horizontal: 20, vertical: 12),
+            ),
+            child: const Text("SEND LINK", style: TextStyle(fontFamily: "Saira")),
+          ),
+        ],
+      ),
+    );
   }
 
   @override
@@ -137,10 +241,10 @@ class _LoginState extends State<Login> {
                               child: Container(
                                 padding: const EdgeInsets.all(32),
                                 decoration: BoxDecoration(
-                                  color: Colors.white.withOpacity(0.08),
+                                  color: Colors.white.withValues(alpha: 0.08),
                                   borderRadius: BorderRadius.circular(24),
                                   border: Border.all(
-                                    color: Colors.white.withOpacity(0.2),
+                                    color: Colors.white.withValues(alpha: 0.2),
                                     width: 1.5,
                                   ),
                                 ),
@@ -179,9 +283,7 @@ class _LoginState extends State<Login> {
                                       Align(
                                         alignment: Alignment.centerRight,
                                         child: TextButton(
-                                          onPressed: () {
-                                            // TODO: Forgot Password
-                                          },
+                                          onPressed: () => _showForgotPasswordDialog(),
                                           child: Text(
                                             "Forgot Password?",
                                             style: TextStyle(
@@ -227,7 +329,7 @@ class _LoginState extends State<Login> {
                               Text(
                                 "Don't have an account?",
                                 style: TextStyle(
-                                  color: theme.colorScheme.onSurface.withOpacity(0.7),
+                                  color: theme.colorScheme.onSurface.withValues(alpha: 0.7),
                                   fontFamily: "Saira",
                                 ),
                               ),

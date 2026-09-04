@@ -270,4 +270,27 @@ class AuthProvider {
       return null;
     }
   }
+
+  Future<bool> resetPassword(String email) async {
+    try {
+      await supabase.auth.resetPasswordForEmail(
+        email,
+        redirectTo: 'io.supabase.woodyz://login-callback',
+      );
+      return true;
+    } catch (e) {
+      debugPrint("Reset password error: $e");
+      return false;
+    }
+  }
+
+  Future<bool> updatePassword(String newPassword) async {
+    try {
+      await supabase.auth.updateUser(sb.UserAttributes(password: newPassword));
+      return true;
+    } catch (e) {
+      debugPrint("Update password error: $e");
+      return false;
+    }
+  }
 }
