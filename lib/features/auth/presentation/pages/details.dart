@@ -4,6 +4,7 @@ import 'package:woodyz/features/products/presentation/providers/products_provide
 import 'package:url_launcher/url_launcher.dart';
 import 'package:woodyz/features/auth/presentation/providers/auth_provider.dart';
 import 'package:woodyz/features/auth/presentation/pages/artisan/edit_product.dart';
+import 'package:woodyz/features/auth/presentation/widgets/report_dialog.dart';
 import 'package:lottie/lottie.dart';
 
 class Details extends StatefulWidget {
@@ -119,15 +120,6 @@ class _DetailsState extends State<Details> {
     }
   }
 
-  Color _getStatusColor(ProductStatus status) {
-    switch (status) {
-      case ProductStatus.inStock: return Colors.green;
-      case ProductStatus.onDemand: return Colors.blue;
-      case ProductStatus.inProduction: return Colors.orange;
-      case ProductStatus.unavailable: return Colors.red;
-    }
-  }
-
   Widget _buildReviewItem(BuildContext context, Review review) {
     final theme = Theme.of(context);
     final primaryColor = theme.colorScheme.primary;
@@ -219,8 +211,22 @@ class _DetailsState extends State<Details> {
               onPressed: () => _showDeleteConfirmation(context),
               icon: const Icon(Icons.delete_outline, color: Colors.red),
             ),
-          ]
-          else if (widget.u != null)
+          ] else if (widget.u != null) ...[
+            if (widget.u!.role == 'customer')
+              IconButton(
+                icon: const Icon(Icons.report_problem_outlined, color: Colors.redAccent),
+                onPressed: () {
+                  showDialog(
+                    context: context,
+                    builder: (context) => ReportDialog(
+                      reporterId: widget.u!.id,
+                      reportedId: widget.p.id.toString(),
+                      type: 'product',
+                    ),
+                  );
+                },
+              ),
+            SizedBox(width: 15,),
             Padding(
               padding: const EdgeInsets.only(right: 12.0),
               child: BouncingIconButton(
@@ -284,12 +290,11 @@ class _DetailsState extends State<Details> {
                     );
                   }
                 },
-                icon: !_saved
-                    ? Icons.favorite_border_outlined
-                    : Icons.favorite,
+                icon: !_saved ? Icons.favorite_border_outlined : Icons.favorite,
                 color: _saved ? Colors.red : theme.iconTheme.color,
               ),
             ),
+          ],
         ],
       ),
       body: SingleChildScrollView(
@@ -553,7 +558,7 @@ class _DetailsState extends State<Details> {
                         ),
                       ),
                       const SizedBox(height: 16),
-                      Widget2(artisan: widget.a),
+                      Widget2(artisan: widget.a, u: widget.u,),
                       const SizedBox(height: 40),
 
                       // Reviews Section
@@ -760,7 +765,7 @@ class FullScreenImage extends StatelessWidget {
             child: Padding(
               padding: const EdgeInsets.all(16.0),
               child: CircleAvatar(
-                backgroundColor: Colors.black.withOpacity(0.5),
+                backgroundColor: Colors.black.withValues(alpha: 0.5),
                 child: IconButton(
                   icon: const Icon(Icons.close, color: Colors.white),
                   onPressed: () => Navigator.pop(context),

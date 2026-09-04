@@ -4,11 +4,13 @@ import 'package:woodyz/features/auth/presentation/widgets/profile_widgets.dart';
 import 'package:woodyz/features/auth/presentation/providers/auth_provider.dart';
 import 'package:woodyz/features/products/presentation/providers/products_provider.dart';
 import 'package:woodyz/features/auth/presentation/pages/details.dart';
+import 'package:woodyz/features/auth/presentation/widgets/report_dialog.dart';
 
 class ArtisanView extends StatelessWidget {
   final Artisan artisan;
   final List<Product> items;
-  const ArtisanView({super.key, required this.artisan, required this.items});
+  final Customer? u;
+  const ArtisanView({super.key, required this.artisan, required this.items, this.u});
 
   Future<void> _launchURL(String username) async {
     final Uri url = Uri.parse("https://instagram.com/$username");
@@ -33,9 +35,29 @@ class ArtisanView extends StatelessWidget {
             children: [
               Padding(
                 padding: const EdgeInsets.all(10.0),
-                child: IconButton(
-                  icon: Icon(Icons.arrow_back_ios_new, color: theme.colorScheme.primary, size: 20),
-                  onPressed: () => Navigator.pop(context),
+                child: Row(
+                  mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                  children: [
+                    IconButton(
+                      icon: Icon(Icons.arrow_back_ios_new, color: theme.colorScheme.primary, size: 20),
+                      onPressed: () => Navigator.pop(context),
+                    ),
+                    if (u != null && u!.role == 'customer')
+                      IconButton(
+                        icon: const Icon(Icons.report_problem_outlined, color: Colors.redAccent),
+                        onPressed: () {
+                          showDialog(
+                            context: context,
+                            builder: (context) => ReportDialog(
+                              reporterId: u!.id,
+                              reportedId: artisan.id,
+                              type: 'artisan',
+                            ),
+                          );
+                        },
+                      ),
+                    SizedBox(width: 15,)
+                  ],
                 ),
               ),
               Center(
@@ -55,10 +77,10 @@ class ArtisanView extends StatelessWidget {
                   crossAxisAlignment: CrossAxisAlignment.start,
                   children: [
                     Text("Bio", style: TextStyle(fontWeight: FontWeight.bold, fontSize: 18, color: theme.colorScheme.primary, fontFamily: "Saira")),
-                    Text(artisan.bio ?? "No bio provided.", style: TextStyle(fontSize: 15, color: theme.colorScheme.onSurface.withOpacity(0.7), fontFamily: "Saira")),
+                    Text(artisan.bio ?? "No bio provided.", style: TextStyle(fontSize: 15, color: theme.colorScheme.onSurface.withValues(alpha: 0.7), fontFamily: "Saira")),
                     const SizedBox(height: 15),
                     Text("Address", style: TextStyle(fontWeight: FontWeight.bold, fontSize: 18, color: theme.colorScheme.primary, fontFamily: "Saira")),
-                    Text(artisan.address ?? artisan.location, style: TextStyle(fontSize: 15, color: theme.colorScheme.onSurface.withOpacity(0.7), fontFamily: "Saira")),
+                    Text(artisan.address ?? artisan.location, style: TextStyle(fontSize: 15, color: theme.colorScheme.onSurface.withValues(alpha: 0.7), fontFamily: "Saira")),
                     const SizedBox(height: 15),
                     Text("Skills", style: TextStyle(fontWeight: FontWeight.bold, fontSize: 18, color: theme.colorScheme.primary, fontFamily: "Saira")),
                     Wrap(
@@ -94,7 +116,7 @@ class ArtisanView extends StatelessWidget {
                     const Text("Products", style: TextStyle(fontWeight: FontWeight.bold, fontSize: 22, fontFamily: "Saira")),
                     items.isEmpty ? Padding(
                       padding: const EdgeInsets.symmetric(vertical: 20),
-                      child: Center(child: Text("No products found", style: TextStyle(color: theme.colorScheme.onSurface.withOpacity(0.5), fontSize: 18, fontFamily: "Saira"))),
+                      child: Center(child: Text("No products found", style: TextStyle(color: theme.colorScheme.onSurface.withValues(alpha: 0.5), fontSize: 18, fontFamily: "Saira"))),
                     ) :
                     GridView.builder(
                       shrinkWrap: true,
@@ -112,7 +134,6 @@ class ArtisanView extends StatelessWidget {
                         final item = items[index];
                         return InkWell(
                           onTap: () {
-                            final u = Customer(username: "", fullName: "", location: "", id: "");
                             Navigator.push(
                               context,
                               MaterialPageRoute(builder:(context) => Details(p: item,a: artisan, u: u,already_saved: false,),),

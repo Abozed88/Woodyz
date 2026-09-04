@@ -6,7 +6,6 @@ class User {
   String role;
   String? phone;
   String location;
-  String? address;
   String? bio;
 
   User({
@@ -17,7 +16,6 @@ class User {
     required this.role,
     this.phone,
     required this.location,
-    this.address,
     this.bio,
   });
 
@@ -30,7 +28,6 @@ class User {
       role: json['role'] ?? 'customer',
       phone: json['phone'],
       location: json['location'] ?? '',
-      address: json['address'],
       bio: json['bio'],
     );
   }
@@ -63,7 +60,6 @@ class Customer extends User {
     super.avatarUrl,
     super.phone,
     required super.location,
-    super.address,
   }) : super(role: 'customer');
 
   factory Customer.fromProfile(User profile, {String? address}) {
@@ -74,14 +70,12 @@ class Customer extends User {
       avatarUrl: profile.avatarUrl,
       phone: profile.phone,
       location: profile.location,
-      address: address ?? profile.address,
     );
   }
 
   @override
   Map<String, dynamic> toJson() {
     final map = super.toJson();
-    map['address'] = address; // Include address for customers in profiles table
     return map;
   }
 }
@@ -90,6 +84,7 @@ class Artisan extends User {
   List<String> skills;
   double rating;
   String? instagram;
+  String? address;
 
   Artisan({
     required super.id,
@@ -100,7 +95,7 @@ class Artisan extends User {
     required super.location,
     super.bio,
     this.skills = const [],
-    super.address,
+    this.address,
     this.rating = 0.0,
     this.instagram,
   }) : super(role: 'artisan');
@@ -121,7 +116,7 @@ class Artisan extends User {
       location: profile.location,
       bio: bio ?? profile.bio,
       skills: skills,
-      address: address ?? profile.address,
+      address: address,
       rating: rating,
       instagram: instagram
     );
@@ -155,6 +150,6 @@ class Artisan extends User {
 
   @override
   String toString() {
-    return 'Artisan(id: $id, username: $username, fullName: $fullName, instagram: $instagram, avatarUrl: $avatarUrl, rating: $rating, bio: $bio, skills: $skills, location: $location)';
+    return 'Artisan(id: $id, username: $username, fullName: $fullName, instagram: $instagram, avatarUrl: $avatarUrl, rating: $rating, bio: $bio, skills: $skills, location: $location, address: $address)';
   }
 }

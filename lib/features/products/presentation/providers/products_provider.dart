@@ -288,4 +288,24 @@ class ProductsProvider {
       rethrow;
     }
   }
+
+  Future<bool> reportItem({
+    required String reporterId,
+    required String reportedId,
+    required String type,
+    required String reason,
+  }) async {
+    try {
+      await supabase.from('reports').insert({
+        'reporter_id': reporterId,
+        'reported_id': reportedId,
+        'item_type': type,
+        'reason': reason,
+      });
+      return true;
+    } catch (e) {
+      debugPrint("Error reporting item: $e");
+      return false;
+    }
+  }
 }

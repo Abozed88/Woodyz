@@ -1,6 +1,9 @@
 import 'package:flutter/material.dart';
 import 'package:woodyz/features/auth/presentation/pages/login.dart';
 import 'package:woodyz/features/auth/presentation/providers/auth_provider.dart';
+import 'package:woodyz/features/auth/presentation/pages/account&security.dart';
+import 'package:woodyz/features/auth/presentation/pages/help.dart';
+import 'package:woodyz/features/auth/presentation/pages/about.dart';
 
 class PImage extends StatelessWidget {
   final String? image_url;
@@ -87,16 +90,25 @@ class Preferences extends StatelessWidget {
           context,
           icon: Icons.person_outline,
           title: "Account & Security",
-        ),
-        _buildListTile(
-          context,
-          icon: Icons.notifications_none_outlined,
-          title: "Notifications",
+          onTap: () {
+            Navigator.push(context, MaterialPageRoute(builder: (context) => const AccountSecurity()));
+          },
         ),
         _buildListTile(
           context,
           icon: Icons.help_outline,
           title: "Help & Support",
+          onTap: () {
+            Navigator.push(context, MaterialPageRoute(builder: (context) => const HelpPage()));
+          },
+        ),
+        _buildListTile(
+          context,
+          icon: Icons.info_outline,
+          title: "About Woodyz",
+          onTap: () {
+            Navigator.push(context, MaterialPageRoute(builder: (context) => const AboutPage()));
+          },
         ),
         const SizedBox(height: 32),
         Padding(
@@ -125,7 +137,7 @@ class Preferences extends StatelessWidget {
     );
   }
 
-  Widget _buildListTile(BuildContext context, {required IconData icon, required String title}) {
+  Widget _buildListTile(BuildContext context, {required IconData icon, required String title, required VoidCallback onTap}) {
     final theme = Theme.of(context);
     
     return ListTile(
@@ -149,9 +161,7 @@ class Preferences extends StatelessWidget {
         ),
       ),
       trailing: Icon(Icons.chevron_right, color: theme.colorScheme.onSurface.withOpacity(0.3)),
-      onTap: () {
-        // TODO: Navigation
-      },
+      onTap: onTap,
     );
   }
 

@@ -27,12 +27,10 @@ class _SignupCustState extends State<SignupCust> {
   bool _isSigningUp = false;
 
   final TextEditingController _phonecontroller = TextEditingController();
-  final TextEditingController _addresscontroller = TextEditingController();
 
   @override
   void dispose() {
     _phonecontroller.dispose();
-    _addresscontroller.dispose();
     super.dispose();
   }
 
@@ -191,14 +189,6 @@ class _SignupCustState extends State<SignupCust> {
                                     ),
                                     const SizedBox(height: 24),
 
-                                    CustomTextField(
-                                      label: "Delivery Address",
-                                      hint: "village or city",
-                                      controller: _addresscontroller,
-                                      maxLines: 3,
-                                    ),
-                                    const SizedBox(height: 48),
-
                                     ElevatedButton(
                                       onPressed: _isSigningUp ? null : _handleSignup,
                                       style: ElevatedButton.styleFrom(
@@ -246,7 +236,6 @@ class _SignupCustState extends State<SignupCust> {
       setState(() => _isSigningUp = true);
       try {
         customer.phone = _phonecontroller.text.trim();
-        customer.address = _addresscontroller.text.trim();
         
         AuthProvider auth = AuthProvider(context: context);
         final cx = await auth.signUp(

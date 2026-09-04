@@ -81,30 +81,30 @@ class _CustomTextFieldState extends State<CustomTextField> {
                 : null,
           ),
           validator: (value) {
-            if (value == null || value.trim().isEmpty) {
+            if ((value == null  || value.trim().isEmpty) && widget.hint != "phone") {
               return "This field is required";
             }
 
             if (widget.hint == "password") {
-              if (value.length < 6) return "Password too short (min 6)";
-              if (value.length > 32) return "Password too long (max 32)";
+              if (value!.length < 6) return "Password too short (min 6)";
+              if (value!.length > 32) return "Password too long (max 32)";
             }
 
             if (widget.hint == "you@gmail.com") {
               final emailRegex = RegExp(r'^[\w-.]+@([\w-]+\.)+[\w-]{2,4}$');
-              if (!emailRegex.hasMatch(value.trim())) {
+              if (!emailRegex.hasMatch(value!.trim())) {
                 return "Enter a valid email address";
               }
             }
 
             if (widget.hint == "phone") {
-              if (!RegExp(r'^\+?[0-9]{8,15}$').hasMatch(value.trim())) {
+              if (!RegExp(r'^\+?[0-9]{8,15}$').hasMatch(value!.trim())) {
                 return "Enter a valid phone number";
               }
             }
 
             if (widget.label == "Instagram Username") {
-              if(value.length > 30 || value.contains('!') || value.contains('@') || value.contains('#') || value.contains('&')){
+              if(value!.length > 30 || value.contains('!') || value.contains('@') || value.contains('#') || value.contains('&')){
                 return "Enter a valid Instagram username";
               }
             }

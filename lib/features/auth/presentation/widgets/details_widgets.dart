@@ -116,8 +116,9 @@ class Widget1 extends StatelessWidget {
 
 class Widget2 extends StatelessWidget {
   final Artisan artisan;
+  final Customer? u;
 
-  const Widget2({super.key, required this.artisan});
+  const Widget2({super.key, required this.artisan, this.u});
 
   @override
   Widget build(BuildContext context) {
@@ -140,7 +141,7 @@ class Widget2 extends StatelessWidget {
             Navigator.push(
               context,
               MaterialPageRoute(
-                builder: (context) => ArtisanView(artisan: artisan, items: newItems,),
+                builder: (context) => ArtisanView(artisan: artisan, items: newItems, u: u,),
               ),
             );
           }
