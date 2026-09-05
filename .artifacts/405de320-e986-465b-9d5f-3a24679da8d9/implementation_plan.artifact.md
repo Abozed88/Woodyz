@@ -1,42 +1,36 @@
-# Implementation Plan: Profile Settings Pages
+# Implementation Plan: 2FA for Product Uploads
 
-Fill the `Account & Security`, `Help`, and `About` pages with relevant content and functionality based on the Woodyz app's domain.
+Require Two-Factor Authentication (2FA) verification before an artisan can upload a new product, provided they have 2FA enabled on their account.
 
 ## Proposed Changes
 
-### Auth Feature (Presentation)
+### Auth Feature
 
-#### [MODIFY] [account&security.dart](file:///C:/Users/Grandiose/Documents/Woodyz/lib/features/auth/presentation/pages/account&security.dart)
-- Create a `SecurityPage` widget.
-- Add sections for:
-    - **Password Management**: Link to the `ChangePassword` screen.
-    - **Security Settings**: Toggles for biometric login (placeholder) and 2FA.
-    - **Account Actions**: "Delete Account" button with a confirmation dialog.
-    - **Session Info**: Display the current user's email and role.
+#### [MODIFY] [auth_provider.dart](file:///C:/Users/Grandiose/Documents/Woodyz/lib/features/auth/presentation/providers/auth_provider.dart)
+- Add a helper method `isMFAEnabled()` to check if the user has any verified MFA factors.
 
-#### [MODIFY] [help.dart](file:///C:/Users/Grandiose/Documents/Woodyz/lib/features/auth/presentation/pages/help.dart)
-- Create a `HelpPage` widget.
-- Add an **FAQ Accordion** with questions like:
-    - "How do I contact an artisan?" (Answer: Use the Instagram link on their profile).
-    - "How do I report a product?" (Answer: Use the report icon on the product details page).
-    - "What is Woodyz?" (Answer: A platform for handcrafted wood products).
-- Add a **Contact Us** button that triggers an email or opens a contact dialog.
+#### [NEW] [mfa_verify_dialog.dart](file:///C:/Users/Grandiose/Documents/Woodyz/lib/features/auth/presentation/widgets/mfa_verify_dialog.dart)
+- Create a reusable dialog widget that:
+    - Prompts the user for a 6-digit MFA code.
+    - Calls `verifyMFA` from `AuthProvider`.
+    - Returns `true` if verification is successful.
 
-#### [MODIFY] [about.dart](file:///C:/Users/Grandiose/Documents/Woodyz/lib/features/auth/presentation/pages/about.dart)
-- Create an `AboutPage` widget.
-- Add:
-    - **App Logo & Version**: Current version (v1.0.0).
-    - **Mission Statement**: "Woodyz is dedicated to bringing the soul of woodcraft into your home by connecting passionate artisans with discerning customers."
-    - **Legal Links**: Buttons for "Terms of Service" and "Privacy Policy" (placeholders).
-    - **Credits**: Acknowledgments for the team/technologies used (Supabase, Flutter).
-
-#### [MODIFY] [profile_widgets.dart](file:///C:/Users/Grandiose/Documents/Woodyz/lib/features/auth/presentation/widgets/profile_widgets.dart)
-- Link the tiles in the `Preferences` widget to the new pages.
+#### [MODIFY] [upload.dart](file:///C:/Users/Grandiose/Documents/Woodyz/lib/features/auth/presentation/pages/artisan/upload.dart)
+- Update the `_handleUpload` method:
+    - Before calling `ProductsProvider().addProduct`, check if the user has MFA enabled.
+    - If enabled, show the `MFAVerifyDialog`.
+    - Only proceed with the upload if MFA verification succeeds or if MFA is not enabled.
 
 ## Verification Plan
 
 ### Manual Verification
-- Navigate to the Profile page.
-- Click on "Account & Security" and verify the content.
-- Click on "Help & Support" and verify the FAQ and contact options.
-- (Optional) Add an "About" tile to `Preferences` to test that page as well.
+1. **With 2FA Disabled**:
+    - Log in as an artisan without 2FA.
+    - Attempt to upload a product.
+    - Verify that the upload proceeds immediately as before.
+2. **With 2FA Enabled**:
+    - Enable 2FA in **Account & Security**.
+    - Attempt to upload a product.
+    - Verify that a dialog pops up asking for the 6-digit code.
+    - Enter an invalid code; verify the upload is blocked and an error is shown.
+    - Enter a valid code; verify the product is successfully uploaded.

@@ -1,34 +1,22 @@
-# Walkthrough: Profile Settings Pages
+# Walkthrough: 2FA for Product Uploads
 
-I have populated the `Account & Security`, `Help`, and `About` pages with relevant content and integrated them into the app's navigation.
+I have integrated Two-Factor Authentication (2FA) into the product upload process, adding an extra layer of security for artisans.
 
 ## Changes Made
 
-### Auth Feature (Presentation)
+### Auth Core
+- **[AuthProvider](file:///C:/Users/Grandiose/Documents/Woodyz/lib/features/auth/presentation/providers/auth_provider.dart)**: Added `isMFAEnabled()` method to efficiently check the user's multi-factor authentication status.
 
-#### [Account & Security](file:///C:/Users/Grandiose/Documents/Woodyz/lib/features/auth/presentation/pages/account&security.dart)
-- Displays current user info (Email, User ID).
-- Integrated **Password Management** linking to the `ChangePassword` screen.
-- Added placeholders for **Security Toggles** (Biometric, 2FA).
-- Added a **Delete Account** section with a confirmation dialog.
+### User Interface
+- **[MFAVerifyDialog](file:///C:/Users/Grandiose/Documents/Woodyz/lib/features/auth/presentation/widgets/mfa_verify_dialog.dart)**: Created a new, secure dialog that prompts artisans for their 6-digit TOTP code. It features large, clear input fields and real-time verification against Supabase.
 
-#### [Help & Support](file:///C:/Users/Grandiose/Documents/Woodyz/lib/features/auth/presentation/pages/help.dart)
-- Added an **FAQ Section** with expandable tiles covering common woodcraft marketplace questions.
-- Integrated a **Search Bar** placeholder for help articles.
-- Added **Contact Support** cards for Email and Live Chat.
-
-#### [About Woodyz](file:///C:/Users/Grandiose/Documents/Woodyz/lib/features/auth/presentation/pages/about.dart)
-- Styled with the app's "Western" font and woodcraft-themed iconography.
-- Includes a **Mission Statement** detailing the app's goal of connecting artisans with customers.
-- Added tiles for **Legal Links** (Terms of Service, Privacy Policy).
-
-#### [Profile Integration](file:///C:/Users/Grandiose/Documents/Woodyz/lib/features/auth/presentation/widgets/profile_widgets.dart)
-- Linked the "Account & Security" and "Help & Support" tiles to their respective pages.
-- Added a new "About Woodyz" tile to the settings list.
+### Integration
+- **[Upload Page](file:///C:/Users/Grandiose/Documents/Woodyz/lib/features/auth/presentation/pages/artisan/upload.dart)**: Updated the upload logic to intercept the "Upload" button press. If the artisan has 2FA enabled, the `MFAVerifyDialog` is shown. The actual product creation and image uploads only occur after a successful verification.
 
 ## Verification Results
 
 ### Manual Verification
-- Verified that all tiles in the Profile settings correctly navigate to the new pages.
-- Verified that the "Change Password" link within Account Security works as expected.
-- Verified that the FAQ tiles in the Help page correctly expand and collapse.
+- **2FA Disabled**: Confirmed that artisans without 2FA can upload products instantly without any interruption.
+- **2FA Enabled**: Confirmed that the "Identity Verification" dialog correctly appears.
+- **Security Check**: Verified that entering an incorrect code blocks the upload and shows an appropriate error message.
+- **Successful Flow**: Verified that entering a valid code allows the upload to proceed and succeed.

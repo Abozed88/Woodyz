@@ -293,4 +293,42 @@ class AuthProvider {
       return false;
     }
   }
+
+  // --- Account Deletion ---
+  Future<bool> deleteAccount() async {
+    try {
+      await supabase.rpc('delete_user');
+      await signOut();
+      return true;
+    } catch (e) {
+      debugPrint("Delete account error: $e");
+      return false;
+    }
+  }
+
+  // --- MFA (2FA) Support ---
+  Future<sb.AuthMFAEnrollResponse> enrollMFA() async {
+    return await supabase.auth.mfa.enroll(factorType: sb.FactorType.totp);
+  }
+
+  Future<void> verifyMFA(String factorId, String code) async {
+    await supabase.auth.mfa.challengeAndVerify(
+      factorId: factorId,
+      code: code,
+    );
+  }
+
+  Future<void> unenrollMFA(String factorId) async {
+    await supabase.auth.mfa.unenroll(factorId);
+  }
+
+  Future<List<sb.Factor>> getMFAFactors() async {
+    final res = await supabase.auth.mfa.listFactors();
+    return res.all;
+  }
+
+  Future<bool> isMFAEnabled() async {
+    final factors = await getMFAFactors();
+    return factors.any((f) => f.status == sb.FactorStatus.verified);
+  }
 }

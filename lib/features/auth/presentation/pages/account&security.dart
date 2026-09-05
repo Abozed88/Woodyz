@@ -1,6 +1,9 @@
 import 'package:flutter/material.dart';
 import 'package:woodyz/features/auth/presentation/providers/auth_provider.dart';
 import 'package:woodyz/features/auth/presentation/pages/change_password.dart';
+import 'package:woodyz/features/auth/presentation/pages/login.dart';
+import 'package:qr_flutter/qr_flutter.dart';
+import 'package:supabase_flutter/supabase_flutter.dart' as sb;
 
 class AccountSecurity extends StatefulWidget {
   const AccountSecurity({super.key});
@@ -10,8 +13,113 @@ class AccountSecurity extends StatefulWidget {
 }
 
 class _AccountSecurityState extends State<AccountSecurity> {
-  bool _biometricEnabled = false;
   bool _twoFactorEnabled = false;
+  String? _mfaFactorId;
+
+  @override
+  void initState() {
+    super.initState();
+    _loadSettings();
+  }
+
+  Future<void> _loadSettings() async {
+    final authProv = AuthProvider(context: context);
+    final factors = await authProv.getMFAFactors();
+    
+    if (mounted) {
+      setState(() {
+        _twoFactorEnabled = factors.isNotEmpty;
+        if (factors.isNotEmpty) {
+          _mfaFactorId = factors.first.id;
+        }
+      });
+    }
+  }
+
+  Future<void> _toggle2FA(bool enabled) async {
+    if (enabled) {
+      _showMFADialog();
+    } else if (_mfaFactorId != null) {
+      await AuthProvider(context: context).unenrollMFA(_mfaFactorId!);
+      setState(() {
+        _twoFactorEnabled = false;
+        _mfaFactorId = null;
+      });
+      ScaffoldMessenger.of(context).showSnackBar(
+        const SnackBar(content: Text("Two-Factor Authentication disabled.")),
+      );
+    }
+  }
+
+  void _showMFADialog() async {
+    final authProv = AuthProvider(context: context);
+    final res = await authProv.enrollMFA();
+    final qrData = res.totp?.uri;
+    final factorId = res.id;
+    final codeController = TextEditingController();
+
+    if (!mounted) return;
+
+    showDialog(
+      context: context,
+      barrierDismissible: false,
+      builder: (context) => StatefulBuilder(
+        builder: (context, setDialogState) {
+          return AlertDialog(
+            title: const Text("Setup 2FA", style: TextStyle(fontFamily: "Saira", fontWeight: FontWeight.bold)),
+            content: SingleChildScrollView(
+              child: Column(
+                mainAxisSize: MainAxisSize.min,
+                children: [
+                  const Text("Scan this QR code with an authenticator app (like Google Authenticator).", style: TextStyle(fontSize: 13)),
+                  const SizedBox(height: 20),
+                  SizedBox(
+                    height: 180,
+                    width: 180,
+                    child: QrImageView(data: qrData.toString(), version: QrVersions.auto),
+                  ),
+                  const SizedBox(height: 20),
+                  TextField(
+                    controller: codeController,
+                    keyboardType: TextInputType.number,
+                    decoration: const InputDecoration(
+                      labelText: "Enter 6-digit code",
+                      border: OutlineInputBorder(),
+                    ),
+                  ),
+                ],
+              ),
+            ),
+            actions: [
+              TextButton(onPressed: () => Navigator.pop(context), child: const Text("CANCEL")),
+              ElevatedButton(
+                onPressed: () async {
+                  try {
+                    await authProv.verifyMFA(factorId, codeController.text.trim());
+                    if (mounted) {
+                      setState(() {
+                        _twoFactorEnabled = true;
+                        _mfaFactorId = factorId;
+                      });
+                      Navigator.pop(context);
+                      ScaffoldMessenger.of(this.context).showSnackBar(
+                        const SnackBar(content: Text("2FA enabled successfully!")),
+                      );
+                    }
+                  } catch (e) {
+                    ScaffoldMessenger.of(context).showSnackBar(
+                      const SnackBar(content: Text("Invalid code. Please try again.")),
+                    );
+                  }
+                },
+                child: const Text("VERIFY"),
+              ),
+            ],
+          );
+        }
+      ),
+    );
+  }
 
   void _showDeleteAccountDialog() {
     final theme = Theme.of(context);
@@ -34,12 +142,25 @@ class _AccountSecurityState extends State<AccountSecurity> {
             child: Text("CANCEL", style: TextStyle(color: theme.colorScheme.onSurface.withValues(alpha: 0.6))),
           ),
           ElevatedButton(
-            onPressed: () {
-              // TODO: Implement actual deletion logic via AuthProvider
-              Navigator.pop(context);
-              ScaffoldMessenger.of(context).showSnackBar(
-                const SnackBar(content: Text("Account deletion request submitted.")),
-              );
+            onPressed: () async {
+              final success = await AuthProvider(context: context).deleteAccount();
+              if (mounted) {
+                Navigator.pop(context);
+                if (success) {
+                  Navigator.pushAndRemoveUntil(
+                    context,
+                    MaterialPageRoute(builder: (context) => const Login()),
+                    (route) => false,
+                  );
+                  ScaffoldMessenger.of(context).showSnackBar(
+                    const SnackBar(content: Text("Account deleted successfully.")),
+                  );
+                } else {
+                  ScaffoldMessenger.of(context).showSnackBar(
+                    const SnackBar(content: Text("Failed to delete account. Please try again later.")),
+                  );
+                }
+              }
             },
             style: ElevatedButton.styleFrom(backgroundColor: Colors.redAccent, foregroundColor: Colors.white),
             child: const Text("DELETE PERMANENTLY"),
@@ -85,16 +206,10 @@ class _AccountSecurityState extends State<AccountSecurity> {
               },
             ),
             _buildSwitchTile(
-              icon: Icons.fingerprint,
-              title: "Biometric Login",
-              value: _biometricEnabled,
-              onChanged: (v) => setState(() => _biometricEnabled = v),
-            ),
-            _buildSwitchTile(
               icon: Icons.verified_user_outlined,
               title: "Two-Factor Auth",
               value: _twoFactorEnabled,
-              onChanged: (v) => setState(() => _twoFactorEnabled = v),
+              onChanged: _toggle2FA,
             ),
 
             const SizedBox(height: 32),

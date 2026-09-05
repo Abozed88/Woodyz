@@ -6,6 +6,7 @@ import 'package:woodyz/features/auth/presentation/providers/auth_provider.dart';
 import 'package:image_picker/image_picker.dart';
 import 'package:woodyz/core/widgets/custom_text_field.dart';
 import 'package:woodyz/features/products/presentation/providers/products_provider.dart';
+import 'package:woodyz/features/auth/presentation/widgets/mfa_verify_dialog.dart';
 
 class Upload extends StatefulWidget {
   final Artisan artisan;
@@ -292,6 +293,20 @@ class _UploadState extends State<Upload> {
         return;
       }
 
+      final authProv = AuthProvider(context: context);
+      final bool mfaEnabled = await authProv.isMFAEnabled();
+
+      if (mfaEnabled && mounted) {
+        final verified = await showDialog<bool>(
+          context: context,
+          barrierDismissible: false,
+          builder: (context) => const MFAVerifyDialog(),
+        );
+
+        if (verified != true) return; // User cancelled or failed verification
+      }
+
+      if (!mounted) return;
       setState(() => _isUploading = true);
       try {
         p.title = _namecontroller.text.trim();
@@ -303,7 +318,7 @@ class _UploadState extends State<Upload> {
           ScaffoldMessenger.of(context).showSnackBar(
             SnackBar(content: Row(
               children: [
-                Text("Product uploaded successfully!"),
+                const Text("Product uploaded successfully!"),
                 Lottie.asset('assets/animations/Check Mark - Success.json')
               ],
             )),

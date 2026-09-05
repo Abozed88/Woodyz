@@ -1,7 +1,6 @@
-# Tasks: Fill Profile Settings Pages
+# Tasks: 2FA for Product Uploads
 
-- `[x]` Implement `account&security.dart`
-- `[x]` Implement `help.dart`
-- `[x]` Implement `about.dart`
-- `[x]` Link pages in `profile_widgets.dart`
-- `[x]` Verify content and navigation
+- `[x]` Add `isMFAEnabled` and update MFA logic in `AuthProvider`
+- `[x]` Create `MFAVerifyDialog` in `lib/features/auth/presentation/widgets/mfa_verify_dialog.dart`
+- `[x]` Integrate MFA verification into `_handleUpload` in `upload.dart`
+- `[x]` Verify functionality with and without 2FA enabled

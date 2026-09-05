@@ -1,7 +1,59 @@
 import 'package:flutter/material.dart';
+import 'package:url_launcher/url_launcher.dart';
+import 'dart:io';
+import 'package:device_info_plus/device_info_plus.dart';
+import 'package:package_info_plus/package_info_plus.dart';
+import 'package:url_launcher/url_launcher.dart';
 
 class HelpPage extends StatelessWidget {
   const HelpPage({super.key});
+
+  Future<void> launchSupportEmail() async {
+    // 1. Fetch App Info
+    final PackageInfo packageInfo = await PackageInfo.fromPlatform();
+    final String appVersion = packageInfo.version;
+    final String buildNumber = packageInfo.buildNumber;
+
+    // 2. Fetch Device Info
+    final DeviceInfoPlugin deviceInfo = DeviceInfoPlugin();
+    String deviceModel = 'Unknown Device';
+    String osVersion = 'Unknown OS';
+
+    if (Platform.isAndroid) {
+      final AndroidDeviceInfo androidInfo = await deviceInfo.androidInfo;
+      deviceModel = "${androidInfo.manufacturer} ${androidInfo.model}";
+      osVersion = "Android ${androidInfo.version.release} (API ${androidInfo.version.sdkInt})";
+    } else if (Platform.isIOS) {
+      final IosDeviceInfo iosInfo = await deviceInfo.iosInfo;
+      deviceModel = iosInfo.utsname.machine;
+      osVersion = "iOS ${iosInfo.systemVersion}";
+    }
+
+    // 3. Construct the Pre-filled Email
+    final Uri emailLaunchUri = Uri(
+      scheme: 'mailto',
+      path: 'support@yourdomain.com', // Your support email
+      queryParameters: {
+        'subject': '[Woodyz Support] App Feedback & Help',
+        'body': 'Please describe your issue or question below:\n'
+            '[Type here]\n\n'
+            '--------------------------------------------\n'
+            'TECHNICAL DETAILS (Please do not delete)\n'
+            'App Version: $appVersion ($buildNumber)\n'
+            'Device: $deviceModel\n'
+            'OS Version: $osVersion\n'
+            '--------------------------------------------',
+      },
+    );
+
+    // 4. Launch the email app
+    if (await canLaunchUrl(emailLaunchUri)) {
+      await launchUrl(emailLaunchUri);
+    } else {
+      print('Could not open email client.');
+    }
+  }
+
 
   @override
   Widget build(BuildContext context) {
@@ -54,18 +106,9 @@ class HelpPage extends StatelessWidget {
               theme,
               Icons.email_outlined,
               "Email Us",
-              "support@woodyz.com",
+              "woodyzSupport@gmail.com",
               () {
-                // TODO: Launch email
-              },
-            ),
-            _buildContactCard(
-              theme,
-              Icons.chat_bubble_outline,
-              "Live Chat",
-              "Available 9 AM - 5 PM",
-              () {
-                // TODO: Launch chat
+                launchSupportEmail();
               },
             ),
             const SizedBox(height: 40),

@@ -1,4 +1,7 @@
 import 'package:flutter/material.dart';
+import 'package:woodyz/features/auth/presentation/pages/terms_of_service.dart';
+import 'package:woodyz/features/auth/presentation/pages/privacy_policy.dart';
+import 'package:woodyz/features/auth/presentation/pages/community_guidelines.dart';
 
 class AboutPage extends StatelessWidget {
   const AboutPage({super.key});
@@ -37,10 +40,26 @@ class AboutPage extends StatelessWidget {
             const SizedBox(height: 40),
             _buildMissionCard(theme),
             const SizedBox(height: 40),
-            _buildLinkTile(context, "Terms of Service", Icons.description_outlined),
-            _buildLinkTile(context, "Privacy Policy", Icons.privacy_tip_outlined),
-            _buildLinkTile(context, "Community Guidelines", Icons.group_outlined),
-            _buildLinkTile(context, "Licenses", Icons.info_outline),
+            _buildLinkTile(context, "Terms of Service", Icons.description_outlined, () {
+              Navigator.push(context, MaterialPageRoute(builder: (context) => const TermsOfServicePage()));
+            }),
+            _buildLinkTile(context, "Privacy Policy", Icons.privacy_tip_outlined, () {
+              Navigator.push(context, MaterialPageRoute(builder: (context) => const PrivacyPolicyPage()));
+            }),
+            _buildLinkTile(context, "Community Guidelines", Icons.group_outlined, () {
+              Navigator.push(context, MaterialPageRoute(builder: (context) => const CommunityGuidelinesPage()));
+            }),
+            _buildLinkTile(context, "Licenses", Icons.info_outline, () {
+              showLicensePage(
+                context: context,
+                applicationName: "Woodyz",
+                applicationVersion: "1.0.0",
+                applicationIcon: Padding(
+                  padding: const EdgeInsets.all(12.0),
+                  child: Image.asset('assets/icons/woodyz-logo.jpeg', height: 60),
+                ),
+              );
+            }),
             const SizedBox(height: 60),
             Text(
               "© 2026 Woodyz. All rights reserved.",
@@ -72,13 +91,7 @@ class AboutPage extends StatelessWidget {
           )
         ],
       ),
-      child: const Center(
-        child: Icon(
-          Icons.park_outlined, // A tree-like icon for woodcraft
-          size: 60,
-          color: Colors.black,
-        ),
-      ),
+      child: Image.asset('assets/icons/woodyz-logo.jpeg')
     );
   }
 
@@ -116,14 +129,12 @@ class AboutPage extends StatelessWidget {
     );
   }
 
-  Widget _buildLinkTile(BuildContext context, String title, IconData icon) {
+  Widget _buildLinkTile(BuildContext context, String title, IconData icon, VoidCallback onTap) {
     return ListTile(
       leading: Icon(icon, size: 22),
       title: Text(title, style: const TextStyle(fontWeight: FontWeight.w500, fontFamily: "Saira")),
       trailing: const Icon(Icons.open_in_new, size: 16, color: Colors.grey),
-      onTap: () {
-        // TODO: Open URL
-      },
+      onTap: onTap,
     );
   }
 }
