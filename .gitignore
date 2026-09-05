@@ -43,3 +43,8 @@ app.*.map.json
 /android/app/debug
 /android/app/profile
 /android/app/release
+
+# Secrets
+lib/config/env.dart
+# Or if you want to ignore the whole config folder:
+# lib/config/
